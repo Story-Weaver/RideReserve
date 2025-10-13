@@ -8,6 +8,6 @@ public interface SeatRepository {
     void addSeat(Seat seat);
     void removeSeat(int id);
     Seat getSeat(int id);
-    List<Seat> getSeatsByVehicle(int vehicleId);
+    List<Seat> getSeatsByVehicle(long vehicleId);
 }
 

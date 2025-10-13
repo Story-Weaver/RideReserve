@@ -74,4 +74,24 @@ public class BookingDao {
         }
         return list;
     }
+    @SuppressLint("Range")
+    public List<Booking> getAll(){
+        List<Booking> list = new ArrayList<>();
+        try (Cursor c = db.rawQuery("SELECT * FROM " + DatabaseContract.Bookings.TABLE_NAME, null)) {
+            while (c.moveToNext()) {
+                list.add(new Booking(
+                        c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_TRIP_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_PASSENGER_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_SEAT_NUMBER)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED)) == 1,
+                        c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_HAS_PET)) == 1,
+                        BookingStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Bookings.COL_STATUS))),
+                        c.getString(c.getColumnIndex(DatabaseContract.Bookings.COL_CREATED_AT))
+                ));
+            }
+        }
+        return list;
+    }
+
 }

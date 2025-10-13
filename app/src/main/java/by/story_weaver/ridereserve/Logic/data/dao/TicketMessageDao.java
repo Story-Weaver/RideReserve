@@ -8,11 +8,14 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import by.story_weaver.ridereserve.Logic.data.models.TicketMessage;
 
 public class TicketMessageDao {
     private final SQLiteDatabase db;
 
+    @Inject
     public TicketMessageDao(SQLiteDatabase db){
         this.db = db;
     }

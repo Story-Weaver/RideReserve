@@ -26,6 +26,6 @@ public class SeatRepositoryImpl implements SeatRepository {
     public Seat getSeat(int id) { return dao.getSeat(id); }
 
     @Override
-    public List<Seat> getSeatsByVehicle(int vehicleId) { return dao.getSeatsByVehicle(vehicleId); }
+    public List<Seat> getSeatsByVehicle(long vehicleId) { return dao.getSeatsByVehicle(vehicleId); }
 }
 

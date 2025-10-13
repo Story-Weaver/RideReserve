@@ -27,5 +27,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public List<Booking> getBookingsByTrip(int tripId) { return dao.getBookingsByTrip(tripId); }
+    @Override
+    public List<Booking> getAll() { return dao.getAll(); }
 }
 

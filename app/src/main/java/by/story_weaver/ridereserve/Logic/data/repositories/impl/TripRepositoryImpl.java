@@ -27,4 +27,7 @@ public class TripRepositoryImpl implements TripRepository {
 
     @Override
     public List<Trip> getTripsByRoute(int routeId) { return dao.getTripsByRoute(routeId); }
+
+    @Override public List<Trip> getTripsByDriver(int driverId) { return dao.getTripsByDriver(driverId); }
+    @Override public List<Trip> getAll() { return dao.getAll(); }
 }

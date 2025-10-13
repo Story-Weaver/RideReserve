@@ -46,7 +46,7 @@ public class SeatDao {
     }
 
     @SuppressLint("Range")
-    public List<Seat> getSeatsByVehicle(int vehicleId){
+    public List<Seat> getSeatsByVehicle(long vehicleId){
         List<Seat> list = new ArrayList<>();
         try(Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Seats.TABLE_NAME +
                 " WHERE " + DatabaseContract.Seats.COL_VEHICLE_ID + " = ?", new String[]{String.valueOf(vehicleId)})){

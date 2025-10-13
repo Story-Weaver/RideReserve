@@ -1,5 +1,7 @@
 package by.story_weaver.ridereserve.Logic.data.repositories.impl;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -35,5 +37,12 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean isTableEmpty() {
         return dao.isTableEmpty();
     }
+
+    @Override
+    public List<User> getAll() { return dao.getAll(); }
+    @Override
+    public User getUserByEmail(String email) { return dao.getByEmail(email); }
+    @Override
+    public void updateUser(User user) { dao.update(user); }
 }
 

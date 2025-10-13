@@ -71,4 +71,44 @@ public class TripDao {
         }
         return list;
     }
+    // в TripDao.java
+    @SuppressLint("Range")
+    public List<Trip> getAll(){
+        List<Trip> list = new ArrayList<>();
+        try (Cursor c = db.rawQuery("SELECT * FROM " + DatabaseContract.Trips.TABLE_NAME, null)) {
+            while (c.moveToNext()) {
+                list.add(new Trip(
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_ROUTE_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_VEHICLE_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_DRIVER_ID)),
+                        c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_DEPARTURE_TIME)),
+                        c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_ARRIVAL_TIME)),
+                        TripStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_STATUS)))
+                ));
+            }
+        }
+        return list;
+    }
+
+    @SuppressLint("Range")
+    public List<Trip> getTripsByDriver(int driverId){
+        List<Trip> list = new ArrayList<>();
+        try (Cursor c = db.rawQuery("SELECT * FROM " + DatabaseContract.Trips.TABLE_NAME +
+                " WHERE " + DatabaseContract.Trips.COL_DRIVER_ID + " = ?", new String[]{String.valueOf(driverId)})) {
+            while (c.moveToNext()) {
+                list.add(new Trip(
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_ROUTE_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_VEHICLE_ID)),
+                        c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_DRIVER_ID)),
+                        c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_DEPARTURE_TIME)),
+                        c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_ARRIVAL_TIME)),
+                        TripStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_STATUS)))
+                ));
+            }
+        }
+        return list;
+    }
+
 }

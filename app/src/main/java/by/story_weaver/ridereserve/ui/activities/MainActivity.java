@@ -1,4 +1,4 @@
-package by.story_weaver.ridereserve.UI.activities;
+package by.story_weaver.ridereserve.ui.activities;
 
 import android.os.Bundle;
 

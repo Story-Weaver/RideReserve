@@ -9,5 +9,7 @@ public interface TripRepository {
     void removeTrip(int id);
     Trip getTrip(int id);
     List<Trip> getTripsByRoute(int routeId);
+    List<Trip> getTripsByDriver(int driverId);
+    List<Trip> getAll();
 }
 

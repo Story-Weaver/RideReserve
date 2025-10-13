@@ -1,5 +1,7 @@
 package by.story_weaver.ridereserve.Logic.hilt.modules;
 
+import java.util.concurrent.Executor;
+
 import javax.inject.Singleton;
 
 import by.story_weaver.ridereserve.Logic.data.repositories.impl.BookingRepositoryImpl;
@@ -20,6 +22,7 @@ import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.TicketMess
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.TripRepository;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.UserRepository;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.VehicleRepository;
+import by.story_weaver.ridereserve.Logic.utils.AppExecutor;
 import dagger.Binds;
 import dagger.Module;
 import dagger.hilt.InstallIn;
@@ -39,4 +42,5 @@ public abstract class RepositoryModule {
     @Binds @Singleton public abstract SupportRepository bindSupportRepository(SupportRepositoryImpl impl);
     @Binds @Singleton public abstract TicketMessageRepository bindTicketMessageRepository(TicketMessageRepositoryImpl impl);
     @Binds @Singleton public abstract CommunicationLogRepository bindCommunicationLogRepository(CommunicationLogRepositoryImpl impl);
+    @Binds @Singleton public abstract Executor bindExecutor(AppExecutor impl);
 }

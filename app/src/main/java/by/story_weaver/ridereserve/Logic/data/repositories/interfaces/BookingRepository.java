@@ -9,4 +9,5 @@ public interface BookingRepository {
     void removeBooking(int id);
     Booking getBooking(int id);
     List<Booking> getBookingsByTrip(int tripId);
+    List<Booking> getAll();
 }
