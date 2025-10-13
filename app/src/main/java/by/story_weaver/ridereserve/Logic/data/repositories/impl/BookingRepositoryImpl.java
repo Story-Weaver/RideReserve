@@ -1,0 +1,31 @@
+package by.story_weaver.ridereserve.Logic.data.repositories.impl;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import java.util.List;
+
+import by.story_weaver.ridereserve.Logic.data.dao.BookingDao;
+import by.story_weaver.ridereserve.Logic.data.models.Booking;
+import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.BookingRepository;
+
+@Singleton
+public class BookingRepositoryImpl implements BookingRepository {
+    private final BookingDao dao;
+
+    @Inject
+    public BookingRepositoryImpl(BookingDao dao) { this.dao = dao; }
+
+    @Override
+    public void addBooking(Booking booking) { dao.addBooking(booking); }
+
+    @Override
+    public void removeBooking(int id) { dao.removeBooking(id); }
+
+    @Override
+    public Booking getBooking(int id) { return dao.getBooking(id); }
+
+    @Override
+    public List<Booking> getBookingsByTrip(int tripId) { return dao.getBookingsByTrip(tripId); }
+}
+
