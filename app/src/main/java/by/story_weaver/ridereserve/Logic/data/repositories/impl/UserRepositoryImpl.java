@@ -1,5 +1,7 @@
 package by.story_weaver.ridereserve.Logic.data.repositories.impl;
 
+import android.util.Log;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -44,5 +46,18 @@ public class UserRepositoryImpl implements UserRepository {
     public User getUserByEmail(String email) { return dao.getByEmail(email); }
     @Override
     public void updateUser(User user) { dao.update(user); }
+    @Override
+    public void exit(){
+            dao.exit();
+    }
+
+    @Override
+    public void setUserInSystem(long id){
+        dao.setUserInSystem(id);
+    }
+    @Override
+    public int getUserInSystem(){
+        return dao.getIdUserInSystem();
+    }
 }
 

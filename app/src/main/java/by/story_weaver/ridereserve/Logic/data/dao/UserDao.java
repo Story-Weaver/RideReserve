@@ -46,6 +46,7 @@ public class UserDao {
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Users.COL_PASSWORD)),
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Users.COL_FULL_NAME)),
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Users.COL_PHONE)),
+                        cursor.getInt(cursor.getColumnIndex(DatabaseContract.Users.COL_IN_SYSTEM)),
                         UserRole.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Users.COL_ROLE)))
                 );
             }
@@ -53,6 +54,37 @@ public class UserDao {
         return null;
     }
 
+    public void exit(){
+        String checkQuery = "SELECT * FROM " + DatabaseContract.Users.TABLE_NAME +
+                " WHERE " + DatabaseContract.Users.COL_IN_SYSTEM + " = 1";
+        Cursor cursor = db.rawQuery(checkQuery, null);
+        try (cursor) {
+            if (cursor.moveToFirst()) {
+                ContentValues resetValues = new ContentValues();
+                resetValues.put(DatabaseContract.Users.COL_IN_SYSTEM, 0);
+                db.update(DatabaseContract.Users.TABLE_NAME, resetValues, null, null);
+            }
+        }
+    }
+    public int getIdUserInSystem(){
+        int id = -1;
+        String query = "SELECT " + DatabaseContract.Users.COL_ID + " FROM " + DatabaseContract.Users.TABLE_NAME +
+                " WHERE " + DatabaseContract.Users.COL_IN_SYSTEM + " = 1";
+        Cursor cursor = db.rawQuery(query, null);
+        try (cursor){
+            if(cursor != null && cursor.moveToNext()){
+                id = cursor.getInt(0);
+            }
+        }
+        return id;
+    }
+    public void setUserInSystem(long id){
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.Users.COL_IN_SYSTEM, 1);
+        String selection = DatabaseContract.Users.COL_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(id)};
+        db.update(DatabaseContract.Users.TABLE_NAME, values, selection, selectionArgs);
+    }
     public boolean isTableEmpty(){
         try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseContract.Users.TABLE_NAME, null)){
             if(cursor.moveToFirst()){
@@ -95,6 +127,7 @@ public class UserDao {
         int passIdx = c.getColumnIndexOrThrow(DatabaseContract.Users.COL_PASSWORD);
         int nameIdx = c.getColumnIndexOrThrow(DatabaseContract.Users.COL_FULL_NAME);
         int phoneIdx = c.getColumnIndexOrThrow(DatabaseContract.Users.COL_PHONE);
+        int inSystemIdx = c.getColumnIndexOrThrow(DatabaseContract.Users.COL_IN_SYSTEM);
         int roleIdx = c.getColumnIndexOrThrow(DatabaseContract.Users.COL_ROLE);
 
         int id = c.getInt(idIdx);
@@ -102,6 +135,7 @@ public class UserDao {
         String password = c.isNull(passIdx) ? null : c.getString(passIdx);
         String fullName = c.isNull(nameIdx) ? null : c.getString(nameIdx);
         String phone = c.isNull(phoneIdx) ? null : c.getString(phoneIdx);
+        int inSystem = c.getInt(inSystemIdx);
         String roleStr = c.isNull(roleIdx) ? null : c.getString(roleIdx);
         UserRole role = null;
         try {
@@ -109,6 +143,6 @@ public class UserDao {
         } catch (IllegalArgumentException ignored) {
         }
 
-        return new User(id, email, password, fullName, phone, role);
+        return new User(id, email, password, fullName, phone,inSystem,  role);
     }
 }

@@ -12,4 +12,7 @@ public interface UserRepository {
     List<User> getAll();
     User getUserByEmail(String email);
     void updateUser(User user);
+    void exit();
+    int getUserInSystem();
+    void setUserInSystem(long id);
 }

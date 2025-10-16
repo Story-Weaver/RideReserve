@@ -7,11 +7,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import javax.inject.Singleton;
 
 import by.story_weaver.ridereserve.Logic.data.dao.BookingDao;
-import by.story_weaver.ridereserve.Logic.data.dao.CommunicationLogDao;
 import by.story_weaver.ridereserve.Logic.data.dao.DatabaseHelper;
 import by.story_weaver.ridereserve.Logic.data.dao.RouteDao;
 import by.story_weaver.ridereserve.Logic.data.dao.SeatDao;
-import by.story_weaver.ridereserve.Logic.data.dao.SupportDao;
 import by.story_weaver.ridereserve.Logic.data.dao.TripDao;
 import by.story_weaver.ridereserve.Logic.data.dao.UserDao;
 import by.story_weaver.ridereserve.Logic.data.dao.VehicleDao;
@@ -28,7 +26,6 @@ public class DatabaseModule {
     @Provides
     @Singleton
     public SQLiteOpenHelper provideDatabase(@ApplicationContext Context context) {
-        // возвращаем наш DatabaseHelper (наследник SQLiteOpenHelper)
         return new DatabaseHelper(context);
     }
 
@@ -72,17 +69,5 @@ public class DatabaseModule {
     @Singleton
     public BookingDao provideBookingDao(SQLiteDatabase db) {
         return new BookingDao(db);
-    }
-
-    @Provides
-    @Singleton
-    public SupportDao provideSupportDao(SQLiteDatabase db) {
-        return new SupportDao(db);
-    }
-
-    @Provides
-    @Singleton
-    public CommunicationLogDao provideCommunicationLogDao(SQLiteDatabase db) {
-        return new CommunicationLogDao(db);
     }
 }

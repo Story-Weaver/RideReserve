@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
-import by.story_weaver.ridereserve.Logic.data.models.CommunicationLog;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.BookingRepository;
-import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.CommunicationLogRepository;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.TripRepository;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.UserRepository;
 import by.story_weaver.ridereserve.Logic.utils.UiState;
@@ -23,7 +21,6 @@ public class DriverViewModel extends ViewModel {
     private final TripRepository tripRepo;
     private final BookingRepository bookingRepo;
     private final UserRepository userRepo;
-    private final CommunicationLogRepository commRepo;
     private final Executor executor;
 
     private final MutableLiveData<UiState<List<Trip>>> myTrips = new MutableLiveData<>();
@@ -31,11 +28,10 @@ public class DriverViewModel extends ViewModel {
 
     @Inject
     public DriverViewModel(TripRepository tripRepo, BookingRepository bookingRepo,
-                           UserRepository userRepo, CommunicationLogRepository commRepo, Executor executor) {
+                           UserRepository userRepo, Executor executor) {
         this.tripRepo = tripRepo;
         this.bookingRepo = bookingRepo;
         this.userRepo = userRepo;
-        this.commRepo = commRepo;
         this.executor = executor;
     }
 
@@ -62,16 +58,6 @@ public class DriverViewModel extends ViewModel {
                 passengers.postValue(UiState.success(list));
             } catch (Exception e) {
                 passengers.postValue(UiState.error(e.getMessage()));
-            }
-        });
-    }
-
-    public void contactPassenger(final int fromUserId, final int toUserId, final int bookingId, final String method, final String notes) {
-        executor.execute(() -> {
-            try {
-                CommunicationLog log = new CommunicationLog(0, bookingId, fromUserId, toUserId, method, String.valueOf(System.currentTimeMillis()), notes);
-                commRepo.addLog(log);
-            } catch (Exception e) {
             }
         });
     }

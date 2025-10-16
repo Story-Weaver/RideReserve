@@ -12,6 +12,7 @@ public final class DatabaseContract {
         public static final String COL_FULL_NAME = "full_name";
         public static final String COL_PHONE = "phone";
         public static final String COL_ROLE = "role";
+        public static final String COL_IN_SYSTEM = "status";
     }
 
     public static final class Routes {
@@ -65,39 +66,5 @@ public final class DatabaseContract {
         public static final String COL_HAS_PET = "has_pet";
         public static final String COL_STATUS = "status";
         public static final String COL_CREATED_AT = "created_at";
-    }
-
-    public static final class SupportTickets {
-        public static final String TABLE_NAME = "support_tickets";
-
-        public static final String COL_ID = "id";
-        public static final String COL_USER_ID = "user_id";
-        public static final String COL_TYPE = "type";
-        public static final String COL_STATUS = "status";
-        public static final String COL_SUBJECT = "subject";
-        public static final String COL_MESSAGE = "message";
-        public static final String COL_CREATED_AT = "created_at";
-    }
-
-    public static final class TicketMessages {
-        public static final String TABLE_NAME = "ticket_messages";
-
-        public static final String COL_ID = "id";
-        public static final String COL_TICKET_ID = "ticket_id";
-        public static final String COL_AUTHOR_ID = "author_id";
-        public static final String COL_TEXT = "text";
-        public static final String COL_CREATED_AT = "created_at";
-    }
-
-    public static final class CommunicationLogs {
-        public static final String TABLE_NAME = "communication_logs";
-
-        public static final String COL_ID = "id";
-        public static final String COL_BOOKING_ID = "booking_id";
-        public static final String COL_FROM_USER_ID = "from_user_id";
-        public static final String COL_TO_USER_ID = "to_user_id";
-        public static final String COL_METHOD = "method";
-        public static final String COL_TIMESTAMP = "timestamp";
-        public static final String COL_NOTES = "notes";
     }
 }

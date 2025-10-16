@@ -5,16 +5,18 @@ import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
 public class User {
     private long id;
     private String email;
-    private String password; // в реальном приложении храните хеш
+    private String password;
     private String fullName;
     private String phone;
+    private int inSystem;
     private UserRole role;
 
     public User() {}
 
-    public User(long id, String email, String password, String fullName, String phone, UserRole role) {
+    public User(long id, String email, String password, String fullName, String phone,int inSystem, UserRole role) {
         this.id = id; this.email = email; this.password = password;
         this.fullName = fullName; this.phone = phone; this.role = role;
+        this.inSystem = inSystem;
     }
 
     // getters / setters
@@ -30,4 +32,11 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }
+
+    public int getInSystem() {
+        return inSystem;
+    }
+    public void setInSystem(int inSystem) {
+        this.inSystem = inSystem;
+    }
 }

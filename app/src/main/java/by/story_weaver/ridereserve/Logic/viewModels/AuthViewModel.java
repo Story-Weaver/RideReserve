@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import java.util.concurrent.Executor;
 
+import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.UserRepository;
 import by.story_weaver.ridereserve.Logic.utils.UiState;
@@ -16,8 +17,8 @@ import jakarta.inject.Inject;
 public class AuthViewModel extends ViewModel {
     private final UserRepository userRepo;
     private final Executor executor;
-
-    private final MutableLiveData<UiState<User>> currentUserState = new MutableLiveData<>();
+    private final MutableLiveData<UiState<User>> currentUserStateReg = new MutableLiveData<>();
+    private final MutableLiveData<UiState<User>> currentUserStateEnter = new MutableLiveData<>();
 
     @Inject
     public AuthViewModel(UserRepository userRepo, Executor executor) {
@@ -25,40 +26,35 @@ public class AuthViewModel extends ViewModel {
         this.executor = executor;
     }
 
-    public LiveData<UiState<User>> getCurrentUserState() { return currentUserState; }
+    public LiveData<UiState<User>> getCurrentUserStateEnter() { return currentUserStateEnter; }
+    public LiveData<UiState<User>> getCurrentUserStateReg() { return currentUserStateReg; }
 
-    public void checkSignedIn() {
-        currentUserState.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                int id = 1; //userRepo.getIdUserInSystem();
-                //TODO
-                if (id > 0) {
-                    User u = userRepo.getUser(id);
-                    currentUserState.postValue(UiState.success(u));
-                } else {
-                    currentUserState.postValue(UiState.success(null));
-                }
-            } catch (Exception e) {
-                currentUserState.postValue(UiState.error(e.getMessage()));
-            }
-        });
+    public int checkSignedIn() {
+        int id = userRepo.getUserInSystem();
+        if (id > 0) {
+            return id;
+        } else {
+            return -1;
+        }
+    }
+    public void setUserInSystem(long id){
+        try {
+            userRepo.setUserInSystem(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void login(final String email, final String password) {
-        currentUserState.postValue(UiState.loading());
+        currentUserStateEnter.postValue(UiState.loading());
         executor.execute(() -> {
             try {
-                //todo
-                User u = null; //userRepo.getUserByEmail(email);
-                if (u != null && u.getPassword().equals(password)) {
-                    //userRepo.setUserInSystem(u.getId());
-                    currentUserState.postValue(UiState.success(u));
-                } else {
-                    currentUserState.postValue(UiState.error("Неверные учетные данные"));
-                }
+                User user = userRepo.getUserByEmail(email);
+                if (user.getPassword().equals(password)){
+                    currentUserStateEnter.postValue(UiState.success(user));
+                } else currentUserStateEnter.postValue(UiState.error("Некорректные авторизационные данные"));
             } catch (Exception e) {
-                currentUserState.postValue(UiState.error(e.getMessage()));
+                currentUserStateEnter.postValue(UiState.error(e.getMessage()));
             }
         });
     }
@@ -66,21 +62,22 @@ public class AuthViewModel extends ViewModel {
     public void logout() {
         executor.execute(() -> {
             try {
-                //todo
-                currentUserState.postValue(UiState.success(null));
+                userRepo.exit();
             } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         });
     }
 
-    public void register(final User user) {
-        currentUserState.postValue(UiState.loading());
+    public void register(final String email, final String password) {
+        currentUserStateReg.postValue(UiState.loading());
         executor.execute(() -> {
             try {
+                User user = new User(1, email, password, "fam", "num",1, UserRole.PASSENGER);
                 userRepo.addUser(user);
-                currentUserState.postValue(UiState.success(user));
+                currentUserStateReg.postValue(UiState.success(user));
             } catch (Exception e) {
-                currentUserState.postValue(UiState.error(e.getMessage()));
+                currentUserStateReg.postValue(UiState.error(e.getMessage()));
             }
         });
     }

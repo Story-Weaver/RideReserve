@@ -27,7 +27,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Users.COL_PASSWORD + " TEXT NOT NULL, " +
                 DatabaseContract.Users.COL_FULL_NAME + " TEXT, " +
                 DatabaseContract.Users.COL_PHONE + " TEXT, " +
-                DatabaseContract.Users.COL_ROLE + " TEXT NOT NULL" +
+                DatabaseContract.Users.COL_ROLE + " TEXT NOT NULL, " +
+                DatabaseContract.Users.COL_IN_SYSTEM + " INTEGER" +
                 ");");
 
         // routes
@@ -90,56 +91,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(" + DatabaseContract.Bookings.COL_PASSENGER_ID + ") REFERENCES " +
                 DatabaseContract.Users.TABLE_NAME + "(" + DatabaseContract.Users.COL_ID + ") ON DELETE CASCADE" +
                 ");");
-
-        // support_tickets
-        db.execSQL("CREATE TABLE " + DatabaseContract.SupportTickets.TABLE_NAME + " (" +
-                DatabaseContract.SupportTickets.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                DatabaseContract.SupportTickets.COL_USER_ID + " INTEGER NOT NULL, " +
-                DatabaseContract.SupportTickets.COL_TYPE + " TEXT NOT NULL, " +
-                DatabaseContract.SupportTickets.COL_STATUS + " TEXT NOT NULL, " +
-                DatabaseContract.SupportTickets.COL_SUBJECT + " TEXT, " +
-                DatabaseContract.SupportTickets.COL_MESSAGE + " TEXT, " +
-                DatabaseContract.SupportTickets.COL_CREATED_AT + " TEXT, " +
-                "FOREIGN KEY(" + DatabaseContract.SupportTickets.COL_USER_ID + ") REFERENCES " +
-                DatabaseContract.Users.TABLE_NAME + "(" + DatabaseContract.Users.COL_ID + ") ON DELETE CASCADE" +
-                ");");
-
-        // ticket_messages
-        db.execSQL("CREATE TABLE " + DatabaseContract.TicketMessages.TABLE_NAME + " (" +
-                DatabaseContract.TicketMessages.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                DatabaseContract.TicketMessages.COL_TICKET_ID + " INTEGER NOT NULL, " +
-                DatabaseContract.TicketMessages.COL_AUTHOR_ID + " INTEGER NOT NULL, " +
-                DatabaseContract.TicketMessages.COL_TEXT + " TEXT, " +
-                DatabaseContract.TicketMessages.COL_CREATED_AT + " TEXT, " +
-                "FOREIGN KEY(" + DatabaseContract.TicketMessages.COL_TICKET_ID + ") REFERENCES " +
-                DatabaseContract.SupportTickets.TABLE_NAME + "(" + DatabaseContract.SupportTickets.COL_ID + ") ON DELETE CASCADE, " +
-                "FOREIGN KEY(" + DatabaseContract.TicketMessages.COL_AUTHOR_ID + ") REFERENCES " +
-                DatabaseContract.Users.TABLE_NAME + "(" + DatabaseContract.Users.COL_ID + ") ON DELETE SET NULL" +
-                ");");
-
-        db.execSQL("CREATE TABLE " + DatabaseContract.CommunicationLogs.TABLE_NAME + " (" +
-                DatabaseContract.CommunicationLogs.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                DatabaseContract.CommunicationLogs.COL_BOOKING_ID + " INTEGER, " +
-                DatabaseContract.CommunicationLogs.COL_FROM_USER_ID + " INTEGER NOT NULL, " +
-                DatabaseContract.CommunicationLogs.COL_TO_USER_ID + " INTEGER NOT NULL, " +
-                DatabaseContract.CommunicationLogs.COL_METHOD + " TEXT, " +
-                DatabaseContract.CommunicationLogs.COL_TIMESTAMP + " TEXT, " +
-                DatabaseContract.CommunicationLogs.COL_NOTES + " TEXT, " +
-                "FOREIGN KEY(" + DatabaseContract.CommunicationLogs.COL_BOOKING_ID + ") REFERENCES " +
-                DatabaseContract.Bookings.TABLE_NAME + "(" + DatabaseContract.Bookings.COL_ID + ") ON DELETE SET NULL, " +
-                "FOREIGN KEY(" + DatabaseContract.CommunicationLogs.COL_FROM_USER_ID + ") REFERENCES " +
-                DatabaseContract.Users.TABLE_NAME + "(" + DatabaseContract.Users.COL_ID + ") ON DELETE SET NULL, " +
-                "FOREIGN KEY(" + DatabaseContract.CommunicationLogs.COL_TO_USER_ID + ") REFERENCES " +
-                DatabaseContract.Users.TABLE_NAME + "(" + DatabaseContract.Users.COL_ID + ") ON DELETE SET NULL" +
-                ");");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // простая стратегия миграции (для разработки)
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.CommunicationLogs.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.TicketMessages.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.SupportTickets.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Bookings.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Trips.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Seats.TABLE_NAME);
