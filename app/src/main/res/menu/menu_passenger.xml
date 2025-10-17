@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_routes_user" android:title="Маршруты" android:icon="@drawable/route"/>
+    <item android:id="@+id/menu_bookings_user" android:title="Мои брони" android:icon="@drawable/minibus"/>
+    <item android:id="@+id/menu_profile_user" android:title="Профиль" android:icon="@drawable/profile"/>
+</menu>

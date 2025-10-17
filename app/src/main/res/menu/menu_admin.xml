@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_admin_dashboard_admin" android:title="Панель" android:icon="@drawable/data"/>
+    <item android:id="@+id/menu_change_admin" android:title="Изменение" android:icon="@drawable/change"/>
+    <item android:id="@+id/menu_edit_admin" android:title="редактирование" android:icon="@drawable/edit"/>
+</menu>

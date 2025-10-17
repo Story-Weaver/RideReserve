@@ -29,13 +29,13 @@ public class AuthActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         AuthViewModel viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         if(viewModel.checkSignedIn() != -1){
             startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
         }
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_auth);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

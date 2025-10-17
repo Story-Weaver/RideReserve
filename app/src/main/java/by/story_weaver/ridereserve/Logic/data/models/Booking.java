@@ -10,7 +10,7 @@ public class Booking {
     private boolean childSeatNeeded;
     private boolean hasPet;
     private BookingStatus status;
-    private String createdAt; // ISO string
+    private String createdAt;
 
     public Booking() {}
     public Booking(long id, long tripId, long passengerId, int seatNumber,

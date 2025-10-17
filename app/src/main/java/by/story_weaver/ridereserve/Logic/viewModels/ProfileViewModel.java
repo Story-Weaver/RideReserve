@@ -27,16 +27,8 @@ public class ProfileViewModel extends ViewModel {
 
     public LiveData<UiState<User>> getProfileState() { return profileState; }
 
-    public void loadProfile(int userId) {
-        profileState.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                User u = userRepo.getUser(userId);
-                profileState.postValue(UiState.success(u));
-            } catch (Exception e) {
-                profileState.postValue(UiState.error(e.getMessage()));
-            }
-        });
+    public User getProfile() {
+        return userRepo.getUser(userRepo.getUserInSystem());
     }
 
     public void updateProfile(User user) {
