@@ -4,7 +4,7 @@ public class Route {
     private long id;
     private String name;        // например "Маршрут 5"
     private String origin;
-    private String destination;
+    private String destination; // откуда - докуда
     private String stopsJson;   // опционально: JSON массив остановок
 
     public Route() {}

@@ -8,10 +8,14 @@ public class Trip {
     private long vehicleId;
     private long driverId;
     private String departureTime;
-    private String arrivalTime;
+    private String arrivalTime; //время отправки
     private TripStatus status;
 
     public Trip() {}
+    public Trip(long routeId, long vehicleId, long driverId, String departureTime, String arrivalTime, TripStatus status){
+        this.routeId = routeId; this.vehicleId = vehicleId; this.driverId = driverId;
+        this.departureTime = departureTime; this.arrivalTime = arrivalTime; this.status = status;
+    }
     public Trip(long id, long routeId, long vehicleId, long driverId, String departureTime, String arrivalTime, TripStatus status){
         this.id = id; this.routeId = routeId; this.vehicleId = vehicleId; this.driverId = driverId;
         this.departureTime = departureTime; this.arrivalTime = arrivalTime; this.status = status;

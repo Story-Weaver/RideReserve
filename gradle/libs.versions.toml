@@ -9,6 +9,8 @@ activity = "1.8.0"
 hilt = "2.57.2"
 constraintlayout = "2.1.4"
 fragment = "1.8.9"
+cardview = "1.0.0"
+recyclerview = "1.4.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -22,6 +24,8 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -65,6 +65,6 @@ public final class DatabaseContract {
         public static final String COL_CHILD_SEAT_NEEDED = "child_seat_needed";
         public static final String COL_HAS_PET = "has_pet";
         public static final String COL_STATUS = "status";
-        public static final String COL_CREATED_AT = "created_at";
+        public static final String COL_PRICE = "price";
     }
 }

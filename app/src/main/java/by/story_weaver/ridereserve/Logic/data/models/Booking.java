@@ -10,13 +10,13 @@ public class Booking {
     private boolean childSeatNeeded;
     private boolean hasPet;
     private BookingStatus status;
-    private String createdAt;
+    private double price;
 
     public Booking() {}
     public Booking(long id, long tripId, long passengerId, int seatNumber,
-                   boolean childSeatNeeded, boolean hasPet, BookingStatus status, String createdAt){
+                   boolean childSeatNeeded, boolean hasPet, BookingStatus status, double price){
         this.id = id; this.tripId = tripId; this.passengerId = passengerId; this.seatNumber = seatNumber;
-        this.childSeatNeeded = childSeatNeeded; this.hasPet = hasPet; this.status = status; this.createdAt = createdAt;
+        this.childSeatNeeded = childSeatNeeded; this.hasPet = hasPet; this.status = status; this.price = price;
     }
 
     // getters/setters...
@@ -34,6 +34,6 @@ public class Booking {
     public void setHasPet(boolean hasPet) { this.hasPet = hasPet; }
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 }

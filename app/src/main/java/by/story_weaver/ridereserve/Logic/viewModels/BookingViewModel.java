@@ -8,11 +8,15 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
+import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Seat;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
+import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.BookingRepository;
+import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.RouteRepository;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.SeatRepository;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.TripRepository;
+import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.VehicleRepository;
 import by.story_weaver.ridereserve.Logic.utils.UiState;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import jakarta.inject.Inject;
@@ -21,58 +25,44 @@ import jakarta.inject.Inject;
 public class BookingViewModel extends ViewModel {
     private final BookingRepository bookingRepo;
     private final TripRepository tripRepo;
-    private final SeatRepository seatRepo;
-    private final Executor executor;
+    private final RouteRepository routeRepo;
+    private final VehicleRepository vehicleRepo;
 
-    private final MutableLiveData<UiState<List<Seat>>> availableSeats = new MutableLiveData<>();
     private final MutableLiveData<UiState<Booking>> bookingState = new MutableLiveData<>();
 
     @Inject
-    public BookingViewModel(BookingRepository bookingRepo, TripRepository tripRepo, SeatRepository seatRepo, Executor executor) {
+    public BookingViewModel(BookingRepository bookingRepo, TripRepository tripRepo, RouteRepository routeRepo, VehicleRepository vehicleRepo) {
         this.bookingRepo = bookingRepo;
         this.tripRepo = tripRepo;
-        this.seatRepo = seatRepo;
-        this.executor = executor;
+        this.routeRepo = routeRepo;
+        this.vehicleRepo = vehicleRepo;
     }
 
-    public LiveData<UiState<List<Seat>>> getAvailableSeats() { return availableSeats; }
-    public LiveData<UiState<Booking>> getBookingState() { return bookingState; }
-
-    public void loadAvailableSeats(final int tripId) {
-        availableSeats.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                Trip t = tripRepo.getTrip(tripId);
-                List<Seat> seats = seatRepo.getSeatsByVehicle(t.getVehicleId());
-                // можно фильтровать занятые по bookingRepo.getBookingsByTrip(tripId)
-                availableSeats.postValue(UiState.success(seats));
-            } catch (Exception e) {
-                availableSeats.postValue(UiState.error(e.getMessage()));
-            }
-        });
+    public List<Booking> getBookinglist(){
+        return bookingRepo.getAll();
     }
 
-    public void bookSeat(final Booking booking) {
-        bookingState.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                // рекомендуется транзакция на уровне репозитория для проверки гонок
-                bookingRepo.addBooking(booking);
-                bookingState.postValue(UiState.success(booking));
-            } catch (Exception e) {
-                bookingState.postValue(UiState.error(e.getMessage()));
-            }
-        });
+    public List<Trip> getTriplist(){
+        return tripRepo.getAll();
     }
 
-    public void cancelBooking(final int bookingId) {
-        executor.execute(() -> {
-            try {
-                bookingRepo.removeBooking(bookingId);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+    public List<Route> getRoutelist(){
+        return routeRepo.getAllRoutes();
+    }
+    public List<Vehicle> getVehiclelist(){
+        return vehicleRepo.getAllVehicles();
+    }
+    public void addBooking(Booking booking){
+        bookingRepo.addBooking(booking);
+    }
+    public void addTrip(Trip trip){
+        tripRepo.addTrip(trip);
+    }
+    public void addRoute(Route route){
+        routeRepo.addRoute(route);
+    }
+    public void addVehicle(Vehicle vehicle){
+        vehicleRepo.addVehicle(vehicle);
     }
 }
 

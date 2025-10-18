@@ -85,7 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED + " INTEGER DEFAULT 0, " +
                 DatabaseContract.Bookings.COL_HAS_PET + " INTEGER DEFAULT 0, " +
                 DatabaseContract.Bookings.COL_STATUS + " TEXT NOT NULL, " +
-                DatabaseContract.Bookings.COL_CREATED_AT + " TEXT, " +
+                DatabaseContract.Bookings.COL_PRICE + " DECIMAL, " +
                 "FOREIGN KEY(" + DatabaseContract.Bookings.COL_TRIP_ID + ") REFERENCES " +
                 DatabaseContract.Trips.TABLE_NAME + "(" + DatabaseContract.Trips.COL_ID + ") ON DELETE CASCADE, " +
                 "FOREIGN KEY(" + DatabaseContract.Bookings.COL_PASSENGER_ID + ") REFERENCES " +

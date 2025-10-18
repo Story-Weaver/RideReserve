@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.fragment)
+    implementation(libs.cardview)
+    implementation(libs.recyclerview)
     testImplementation(libs.junit)
     implementation(libs.hilt.android)
     androidTestImplementation(libs.ext.junit)

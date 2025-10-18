@@ -10,11 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.R;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class TripDetailFragment extends Fragment {
+    public TripDetailFragment(Booking booking) {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

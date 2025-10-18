@@ -46,6 +46,7 @@ public class MainFragment extends Fragment {
     private boolean isOpeningFullscreen = false;
     private BottomNavigationView bottomNavigationView;
     private FrameLayout fullscreen;
+    private FrameLayout container;
     private ProfileViewModel profileViewModel;
     private MainViewModel mainViewModel;
     private User profile;
@@ -63,6 +64,7 @@ public class MainFragment extends Fragment {
     private void findAllId(View view){
         bottomNavigationView = view.findViewById(R.id.bottomNavigationView);
         fullscreen = view.findViewById(R.id.fullscreen_container);
+        container = view.findViewById(R.id.fragmentContainerView);
     }
 
     @Override
@@ -266,6 +268,7 @@ public class MainFragment extends Fragment {
 
         isOpeningFullscreen = true;
         fullscreen.setVisibility(VISIBLE);
+        container.setVisibility(INVISIBLE);
 
         FragmentTransaction ft = getChildFragmentManager()
                 .beginTransaction()
@@ -288,6 +291,7 @@ public class MainFragment extends Fragment {
             Log.d(TAG, "restoreUi -> hide fullscreen, show bottom nav");
             fullscreen.setVisibility(GONE);
             bottomNavigationView.setVisibility(VISIBLE);
+            container.setVisibility(VISIBLE);
         };
 
         if (fm.getBackStackEntryCount() > 0) {

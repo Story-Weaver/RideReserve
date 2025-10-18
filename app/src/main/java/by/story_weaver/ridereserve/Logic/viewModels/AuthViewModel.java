@@ -60,13 +60,7 @@ public class AuthViewModel extends ViewModel {
     }
 
     public void logout() {
-        executor.execute(() -> {
-            try {
-                userRepo.exit();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        userRepo.exit();
     }
 
     public void register(final String email, final String password) {
@@ -80,5 +74,8 @@ public class AuthViewModel extends ViewModel {
                 currentUserStateReg.postValue(UiState.error(e.getMessage()));
             }
         });
+    }
+    public void addUser(User user){
+        userRepo.addUser(user);
     }
 }

@@ -26,7 +26,7 @@ public class BookingDao {
         values.put(DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED, booking.isChildSeatNeeded() ? 1 : 0);
         values.put(DatabaseContract.Bookings.COL_HAS_PET, booking.isHasPet() ? 1 : 0);
         values.put(DatabaseContract.Bookings.COL_STATUS, booking.getStatus().name());
-        values.put(DatabaseContract.Bookings.COL_CREATED_AT, booking.getCreatedAt());
+        values.put(DatabaseContract.Bookings.COL_PRICE, booking.getPrice());
         db.insertWithOnConflict(DatabaseContract.Bookings.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
@@ -47,7 +47,7 @@ public class BookingDao {
                         cursor.getInt(cursor.getColumnIndex(DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED)) == 1,
                         cursor.getInt(cursor.getColumnIndex(DatabaseContract.Bookings.COL_HAS_PET)) == 1,
                         BookingStatus.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Bookings.COL_STATUS))),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Bookings.COL_CREATED_AT))
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseContract.Bookings.COL_PRICE))
                 );
             }
         }
@@ -68,7 +68,7 @@ public class BookingDao {
                         cursor.getInt(cursor.getColumnIndex(DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED)) == 1,
                         cursor.getInt(cursor.getColumnIndex(DatabaseContract.Bookings.COL_HAS_PET)) == 1,
                         BookingStatus.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Bookings.COL_STATUS))),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Bookings.COL_CREATED_AT))
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseContract.Bookings.COL_PRICE))
                 ));
             }
         }
@@ -87,7 +87,7 @@ public class BookingDao {
                         c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED)) == 1,
                         c.getInt(c.getColumnIndex(DatabaseContract.Bookings.COL_HAS_PET)) == 1,
                         BookingStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Bookings.COL_STATUS))),
-                        c.getString(c.getColumnIndex(DatabaseContract.Bookings.COL_CREATED_AT))
+                        c.getDouble(c.getColumnIndex(DatabaseContract.Bookings.COL_PRICE))
                 ));
             }
         }
