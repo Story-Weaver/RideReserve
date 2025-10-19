@@ -35,7 +35,6 @@ import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverHomeFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.TripBoardFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
-import by.story_weaver.ridereserve.ui.fragments.user.ProfileFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.RoutesFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 

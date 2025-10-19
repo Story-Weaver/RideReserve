@@ -26,7 +26,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Маршрут № 107"
-                android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -38,7 +37,6 @@
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
                 android:text="Подтверждено"
-                android:textColor="@color/white"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -57,7 +55,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Москва - Санкт-Петербург"
-                android:textColor="@color/black"
                 android:textSize="16sp" />
 
         </LinearLayout>
@@ -75,7 +72,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="15 мая 2023, 14:30 - 16:30"
-                android:textColor="@color/black"
                 android:textSize="14sp" />
 
         </LinearLayout>
@@ -116,7 +112,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Пассажиры: 2"
-                android:textColor="#616161"
                 android:textSize="14sp" />
 
             <TextView
@@ -124,7 +119,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1 400 ₽"
-                android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
