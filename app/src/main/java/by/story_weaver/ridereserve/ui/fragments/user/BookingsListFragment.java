@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import java.util.List;
+
 import by.story_weaver.ridereserve.Logic.adapters.BookingAdapter;
 import by.story_weaver.ridereserve.Logic.data.DataSeeder;
 import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
@@ -28,6 +30,7 @@ import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
+import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -37,7 +40,7 @@ public class BookingsListFragment extends Fragment {
     private ImageView filter;
     private MainViewModel mainViewModel;
     private BookingViewModel bookingViewModel;
-    private AuthViewModel authViewModel;
+    private ProfileViewModel profileViewModel;
     private RecyclerView recyclerView;
     private BookingAdapter adapter;
 
@@ -51,13 +54,25 @@ public class BookingsListFragment extends Fragment {
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_bookings_list, container, false);
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshBookings();
+    }
 
+    private void refreshBookings() {
+        User currentUser = profileViewModel.getProfile();
+        if (currentUser != null) {
+            List<Booking> userBookings = bookingViewModel.getBookingsForUser(currentUser.getId());
+            adapter.updateBookings(userBookings);
+        }
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
-        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
         //addData();
         findById(view);
         setupRecyclerView();

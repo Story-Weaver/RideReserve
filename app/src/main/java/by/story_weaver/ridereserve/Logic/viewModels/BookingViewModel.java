@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -32,6 +33,10 @@ public class BookingViewModel extends ViewModel {
     private MutableLiveData<List<Route>> routes = new MutableLiveData<>();
     private MutableLiveData<List<Trip>> trips = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private MutableLiveData<List<Booking>> bookingListLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<Route>> routeListLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<Trip>> tripListLiveData = new MutableLiveData<>();
+
 
     @Inject
     public BookingViewModel(BookingRepository bookingRepo, TripRepository tripRepo, RouteRepository routeRepo, VehicleRepository vehicleRepo) {
@@ -41,6 +46,17 @@ public class BookingViewModel extends ViewModel {
         this.vehicleRepo = vehicleRepo;
     }
 
+    public LiveData<List<Booking>> getBookingListLiveData() {
+        return bookingListLiveData;
+    }
+
+    public LiveData<List<Route>> getRouteListLiveData() {
+        return routeListLiveData;
+    }
+
+    public LiveData<List<Trip>> getTripListLiveData() {
+        return tripListLiveData;
+    }
     public LiveData<List<Route>> getRoutes() { return routes; }
     public LiveData<List<Trip>> getTrips() { return trips; }
     public LiveData<Boolean> getIsLoading() {
@@ -99,6 +115,14 @@ public class BookingViewModel extends ViewModel {
             return false;
         }
     }
-
+    public List<Booking> getBookingsForUser(long userId) {
+        List<Booking> userBookings = new ArrayList<>();
+        for (Booking booking : bookingRepo.getAll()) {
+            if (booking.getPassengerId() == userId) {
+                userBookings.add(booking);
+            }
+        }
+        return userBookings;
+    }
 }
 

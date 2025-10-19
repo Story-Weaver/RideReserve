@@ -75,6 +75,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     }
 
     // Обновление списка бронирований
+    @SuppressLint("NotifyDataSetChanged")
     public void updateBookings(List<Booking> newBookings) {
         this.bookingList = newBookings;
         notifyDataSetChanged(); // Уведомляем адаптер об изменениях

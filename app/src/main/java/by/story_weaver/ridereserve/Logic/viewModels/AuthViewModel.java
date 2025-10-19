@@ -50,7 +50,7 @@ public class AuthViewModel extends ViewModel {
         executor.execute(() -> {
             try {
                 User user = userRepo.getUserByEmail(email);
-                if (user.getPassword().equals(password)){
+                if (user.getPassword().equals(password) && !user.getRole().equals(UserRole.GUEST)){
                     currentUserStateEnter.postValue(UiState.success(user));
                 } else currentUserStateEnter.postValue(UiState.error("Некорректные авторизационные данные"));
             } catch (Exception e) {
