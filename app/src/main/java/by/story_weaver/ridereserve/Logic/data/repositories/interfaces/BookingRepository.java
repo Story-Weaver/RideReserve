@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface BookingRepository {
     void addBooking(Booking booking);
-    void removeBooking(int id);
-    Booking getBooking(int id);
-    List<Booking> getBookingsByTrip(int tripId);
+    void removeBooking(long id);
+    Booking getBooking(long id);
+    List<Booking> getBookingsByTrip(long tripId);
     List<Booking> getAll();
     boolean hasBookingForUserAndTrip(long passengerId, long tripId);
 }

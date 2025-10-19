@@ -35,7 +35,7 @@ import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverHomeFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.TripBoardFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
-import by.story_weaver.ridereserve.ui.fragments.user.RoutesFragment;
+import by.story_weaver.ridereserve.ui.fragments.user.RouteFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -209,7 +209,7 @@ public class MainFragment extends Fragment {
         if (role == UserRole.PASSENGER) {
             if (id == R.id.menu_routes_user) {
                 Log.d(TAG, "Selecting RoutesFragment");
-                replaceMainFragment(new RoutesFragment(), "routes");
+                replaceMainFragment(new RouteFragment(), "routes");
             } else if (id == R.id.menu_bookings_user) {
                 Log.d(TAG, "Selecting BookingsListFragment");
                 replaceMainFragment(new BookingsListFragment(), "bookings");

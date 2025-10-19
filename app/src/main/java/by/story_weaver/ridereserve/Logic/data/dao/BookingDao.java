@@ -53,12 +53,12 @@ public class BookingDao {
         }
         return false;
     }
-    public void removeBooking(int id){
+    public void removeBooking(long id){
         db.delete(DatabaseContract.Bookings.TABLE_NAME, DatabaseContract.Bookings.COL_ID + " = ?", new String[]{String.valueOf(id)});
     }
 
     @SuppressLint("Range")
-    public Booking getBooking(int id){
+    public Booking getBooking(long id){
         try(Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Bookings.TABLE_NAME +
                 " WHERE " + DatabaseContract.Bookings.COL_ID + " = ?", new String[]{String.valueOf(id)})){
             if(cursor.moveToNext()){
@@ -78,7 +78,7 @@ public class BookingDao {
     }
 
     @SuppressLint("Range")
-    public List<Booking> getBookingsByTrip(int tripId){
+    public List<Booking> getBookingsByTrip(long tripId){
         List<Booking> list = new ArrayList<>();
         try(Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Bookings.TABLE_NAME +
                 " WHERE " + DatabaseContract.Bookings.COL_TRIP_ID + " = ?", new String[]{String.valueOf(tripId)})){

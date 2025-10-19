@@ -37,7 +37,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class BookingsListFragment extends Fragment {
     private ImageView add;
-    private ImageView filter;
     private MainViewModel mainViewModel;
     private BookingViewModel bookingViewModel;
     private ProfileViewModel profileViewModel;
@@ -78,9 +77,6 @@ public class BookingsListFragment extends Fragment {
         setupRecyclerView();
         add.setOnClickListener(v -> {
             mainViewModel.openFullscreen(new BookingFragment());
-        });
-        filter.setOnClickListener(v -> {
-            //mainViewModel.openFullscreen();
         });
 
     }
@@ -126,8 +122,7 @@ public class BookingsListFragment extends Fragment {
     }
 
     private void findById(View view){
-        add = view.findViewById(R.id.addButton);
-        filter = view.findViewById(R.id.filterButton);
+        add = view.findViewById(R.id.addButton);;
         recyclerView = view.findViewById(R.id.bookingList);
     }
 

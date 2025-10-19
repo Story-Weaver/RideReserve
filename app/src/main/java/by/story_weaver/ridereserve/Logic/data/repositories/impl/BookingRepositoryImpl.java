@@ -20,13 +20,13 @@ public class BookingRepositoryImpl implements BookingRepository {
     public void addBooking(Booking booking) { dao.addBooking(booking); }
 
     @Override
-    public void removeBooking(int id) { dao.removeBooking(id); }
+    public void removeBooking(long id) { dao.removeBooking(id); }
 
     @Override
-    public Booking getBooking(int id) { return dao.getBooking(id); }
+    public Booking getBooking(long id) { return dao.getBooking(id); }
 
     @Override
-    public List<Booking> getBookingsByTrip(int tripId) { return dao.getBookingsByTrip(tripId); }
+    public List<Booking> getBookingsByTrip(long tripId) { return dao.getBookingsByTrip(tripId); }
 
     @Override
     public List<Booking> getAll() { return dao.getAll(); }

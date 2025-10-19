@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Seat;
@@ -123,6 +124,12 @@ public class BookingViewModel extends ViewModel {
             }
         }
         return userBookings;
+    }
+    public void changeStatusBooking(long bookingId, BookingStatus status) {
+        Booking booking = bookingRepo.getBooking(bookingId);
+        booking.setStatus(status);
+        bookingRepo.removeBooking(booking.getId());
+        bookingRepo.addBooking(booking);
     }
 }
 
