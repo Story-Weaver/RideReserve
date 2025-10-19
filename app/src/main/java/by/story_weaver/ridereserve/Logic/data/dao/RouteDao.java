@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -33,17 +34,11 @@ public class RouteDao {
     }
 
     @SuppressLint("Range")
-    public Route getRoute(int id){
+    public Route getRoute(long id){
         try (Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Routes.TABLE_NAME + " WHERE " +
                 DatabaseContract.Routes.COL_ID + " = ?", new String[]{String.valueOf(id)})) {
             if(cursor.moveToNext()){
-                return new Route(
-                        cursor.getInt(cursor.getColumnIndex(DatabaseContract.Routes.COL_ID)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_NAME)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_ORIGIN)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_DESTINATION)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_STOPS_JSON))
-                );
+                return readRouteFromCursor(cursor);
             }
         }
         return null;
@@ -54,15 +49,64 @@ public class RouteDao {
         List<Route> routes = new ArrayList<>();
         try (Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Routes.TABLE_NAME, null)){
             while(cursor.moveToNext()){
-                routes.add(new Route(
-                        cursor.getInt(cursor.getColumnIndex(DatabaseContract.Routes.COL_ID)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_NAME)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_ORIGIN)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_DESTINATION)),
-                        cursor.getString(cursor.getColumnIndex(DatabaseContract.Routes.COL_STOPS_JSON))
-                ));
+                routes.add(readRouteFromCursor(cursor));
             }
         }
         return routes;
+    }
+    public List<Route> searchRoutesByNumber(String number) {
+        List<Route> routes = new ArrayList<>();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(
+                    "SELECT * FROM " + DatabaseContract.Routes.TABLE_NAME +
+                            " WHERE " + DatabaseContract.Routes.COL_NAME + " LIKE ?",
+                    new String[]{"%" + number + "%"}
+            );
+
+            if (cursor.moveToFirst()) {
+                do {
+                    routes.add(readRouteFromCursor(cursor));
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("RouteDao", "Error in searchRoutesByNumber", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return routes;
+    }
+
+    public List<Route> searchRoutesByPoints(String from, String to) {
+        List<Route> routes = new ArrayList<>();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(
+                    "SELECT * FROM " + DatabaseContract.Routes.TABLE_NAME +
+                            " WHERE " + DatabaseContract.Routes.COL_ORIGIN + " LIKE ? AND " +
+                            DatabaseContract.Routes.COL_DESTINATION + " LIKE ?",
+                    new String[]{"%" + from + "%", "%" + to + "%"}
+            );
+
+            if (cursor.moveToFirst()) {
+                do {
+                    routes.add(readRouteFromCursor(cursor));
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("RouteDao", "Error in searchRoutesByPoints", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return routes;
+    }
+    private Route readRouteFromCursor(Cursor cursor) {
+        Route route = new Route();
+        route.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_ID)));
+        route.setName(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_NAME)));
+        route.setOrigin(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_ORIGIN)));
+        route.setDestination(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_DESTINATION)));
+        route.setStopsJson(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_STOPS_JSON)));
+        return route;
     }
 }

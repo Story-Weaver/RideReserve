@@ -3,6 +3,7 @@ package by.story_weaver.ridereserve.Logic.data.repositories.impl;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import java.util.Collections;
 import java.util.List;
 
 import by.story_weaver.ridereserve.Logic.data.dao.RouteDao;
@@ -23,8 +24,18 @@ public class RouteRepositoryImpl implements RouteRepository {
     public void removeRoute(int id) { dao.removeRoute(id); }
 
     @Override
-    public Route getRoute(int id) { return dao.getRoute(id); }
+    public Route getRoute(long id) { return dao.getRoute(id); }
 
     @Override
     public List<Route> getAllRoutes() { return dao.getAllRoutes(); }
+
+    @Override
+    public List<Route> getRoutesByNumber(String num) {
+        return dao.searchRoutesByNumber(num);
+    }
+
+    @Override
+    public List<Route> geetRoutesByPoints(String from, String to) {
+        return dao.searchRoutesByPoints(from, to);
+    }
 }

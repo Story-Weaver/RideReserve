@@ -68,6 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Trips.COL_DEPARTURE_TIME + " TEXT, " +
                 DatabaseContract.Trips.COL_ARRIVAL_TIME + " TEXT, " +
                 DatabaseContract.Trips.COL_STATUS + " TEXT, " +
+                DatabaseContract.Bookings.COL_PRICE + " DECIMAL, " +
                 "FOREIGN KEY(" + DatabaseContract.Trips.COL_ROUTE_ID + ") REFERENCES " +
                 DatabaseContract.Routes.TABLE_NAME + "(" + DatabaseContract.Routes.COL_ID + ") ON DELETE CASCADE, " +
                 "FOREIGN KEY(" + DatabaseContract.Trips.COL_VEHICLE_ID + ") REFERENCES " +

@@ -115,9 +115,9 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             tvRouteNumber = itemView.findViewById(R.id.tvRouteNumber);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvRoute = itemView.findViewById(R.id.tvRoute);
-            tvDateTime = itemView.findViewById(R.id.tvDateTime);
+            tvDateTime = itemView.findViewById(R.id.trDateTime);
             tvPassengers = itemView.findViewById(R.id.tvPassengers);
-            tvPrice = itemView.findViewById(R.id.tvPrice);
+            tvPrice = itemView.findViewById(R.id.trPrice);
             checkChild = itemView.findViewById(R.id.checkChild);
             checkPet = itemView.findViewById(R.id.checkPet);
         }

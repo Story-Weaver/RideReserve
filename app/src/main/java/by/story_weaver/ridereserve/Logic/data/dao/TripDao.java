@@ -34,7 +34,7 @@ public class TripDao {
     }
 
     @SuppressLint("Range")
-    public Trip getTrip(int id){
+    public Trip getTrip(long id){
         try(Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Trips.TABLE_NAME +
                 " WHERE " + DatabaseContract.Trips.COL_ID + " = ?", new String[]{String.valueOf(id)})){
             if(cursor.moveToNext()){
@@ -45,15 +45,16 @@ public class TripDao {
                         cursor.getInt(cursor.getColumnIndex(DatabaseContract.Trips.COL_DRIVER_ID)),
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_DEPARTURE_TIME)),
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_ARRIVAL_TIME)),
-                        TripStatus.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_STATUS))
-                ));
+                        TripStatus.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_STATUS))),
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseContract.Trips.COL_PRICE))
+                );
             }
         }
         return null;
     }
 
     @SuppressLint("Range")
-    public List<Trip> getTripsByRoute(int routeId){
+    public List<Trip> getTripsByRoute(long routeId){
         List<Trip> list = new ArrayList<>();
         try(Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseContract.Trips.TABLE_NAME +
                 " WHERE " + DatabaseContract.Trips.COL_ROUTE_ID + " = ?", new String[]{String.valueOf(routeId)})){
@@ -65,7 +66,8 @@ public class TripDao {
                         cursor.getInt(cursor.getColumnIndex(DatabaseContract.Trips.COL_DRIVER_ID)),
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_DEPARTURE_TIME)),
                         cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_ARRIVAL_TIME)),
-                        TripStatus.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_STATUS)))
+                        TripStatus.valueOf(cursor.getString(cursor.getColumnIndex(DatabaseContract.Trips.COL_STATUS))),
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseContract.Trips.COL_PRICE))
                 ));
             }
         }
@@ -84,7 +86,8 @@ public class TripDao {
                         c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_DRIVER_ID)),
                         c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_DEPARTURE_TIME)),
                         c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_ARRIVAL_TIME)),
-                        TripStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_STATUS)))
+                        TripStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_STATUS))),
+                        c.getDouble(c.getColumnIndex(DatabaseContract.Trips.COL_PRICE))
                 ));
             }
         }
@@ -104,7 +107,8 @@ public class TripDao {
                         c.getInt(c.getColumnIndex(DatabaseContract.Trips.COL_DRIVER_ID)),
                         c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_DEPARTURE_TIME)),
                         c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_ARRIVAL_TIME)),
-                        TripStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_STATUS)))
+                        TripStatus.valueOf(c.getString(c.getColumnIndex(DatabaseContract.Trips.COL_STATUS))),
+                        c.getDouble(c.getColumnIndex(DatabaseContract.Trips.COL_PRICE))
                 ));
             }
         }

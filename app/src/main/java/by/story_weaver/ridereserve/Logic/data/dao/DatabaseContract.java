@@ -53,6 +53,7 @@ public final class DatabaseContract {
         public static final String COL_DEPARTURE_TIME = "departure_time";
         public static final String COL_ARRIVAL_TIME = "arrival_time";
         public static final String COL_STATUS = "status";
+        public static final String COL_PRICE = "price";
     }
 
     public static final class Bookings {

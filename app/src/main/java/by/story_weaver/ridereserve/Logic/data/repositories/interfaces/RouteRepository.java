@@ -7,6 +7,8 @@ import java.util.List;
 public interface RouteRepository {
     void addRoute(Route route);
     void removeRoute(int id);
-    Route getRoute(int id);
+    Route getRoute(long id);
     List<Route> getAllRoutes();
+    List<Route> getRoutesByNumber(String num);
+    List<Route> geetRoutesByPoints(String from, String to);
 }

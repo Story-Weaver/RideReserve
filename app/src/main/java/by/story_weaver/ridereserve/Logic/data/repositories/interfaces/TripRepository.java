@@ -7,8 +7,8 @@ import java.util.List;
 public interface TripRepository {
     void addTrip(Trip trip);
     void removeTrip(int id);
-    Trip getTrip(int id);
-    List<Trip> getTripsByRoute(int routeId);
+    Trip getTrip(long id);
+    List<Trip> getTripsByRoute(long routeId);
     List<Trip> getTripsByDriver(int driverId);
     List<Trip> getAll();
 }

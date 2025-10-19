@@ -118,21 +118,21 @@ public class DataSeeder {
         List<User> drivers = getUsersByRole(users, UserRole.DRIVER);
 
         // Рейсы для маршрута Москва - СПб
-        trips.add(new Trip(1L, 1L, drivers.get(0).getId(), "2024-01-15 08:00", "2024-01-15 14:30", TripStatus.SCHEDULED));
-        trips.add(new Trip(1L, 2L, drivers.get(1).getId(), "2024-01-15 14:00", "2024-01-15 20:30", TripStatus.SCHEDULED));
-        trips.add(new Trip(1L, 3L, drivers.get(2).getId(), "2024-01-16 09:00", "2024-01-16 15:30", TripStatus.SCHEDULED));
+        trips.add(new Trip(1L, 1L, drivers.get(0).getId(), "2024-01-15 08:00", "2024-01-15 14:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(1L, 2L, drivers.get(1).getId(), "2024-01-15 14:00", "2024-01-15 20:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(1L, 3L, drivers.get(2).getId(), "2024-01-16 09:00", "2024-01-16 15:30", TripStatus.SCHEDULED, 14));
 
         // Рейсы для маршрута Москва - Казань
-        trips.add(new Trip(2L, 1L, drivers.get(0).getId(), "2024-01-15 10:00", "2024-01-15 17:00", TripStatus.SCHEDULED));
-        trips.add(new Trip(2L, 4L, drivers.get(3).getId(), "2024-01-16 07:30", "2024-01-16 14:30", TripStatus.SCHEDULED));
+        trips.add(new Trip(2L, 1L, drivers.get(0).getId(), "2024-01-15 10:00", "2024-01-15 17:00", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(2L, 4L, drivers.get(3).getId(), "2024-01-16 07:30", "2024-01-16 14:30", TripStatus.SCHEDULED, 14));
 
         // Рейсы для маршрута Москва - Сочи
-        trips.add(new Trip(3L, 3L, drivers.get(2).getId(), "2024-01-15 06:00", "2024-01-15 18:00", TripStatus.IN_PROGRESS));
-        trips.add(new Trip(3L, 1L, drivers.get(0).getId(), "2024-01-16 05:30", "2024-01-16 17:30", TripStatus.SCHEDULED));
+        trips.add(new Trip(3L, 3L, drivers.get(2).getId(), "2024-01-15 06:00", "2024-01-15 18:00", TripStatus.IN_PROGRESS, 14));
+        trips.add(new Trip(3L, 1L, drivers.get(0).getId(), "2024-01-16 05:30", "2024-01-16 17:30", TripStatus.SCHEDULED, 14));
 
         // Рейсы для маршрута Минск - Вильнюс
-        trips.add(new Trip(4L, 4L, drivers.get(3).getId(), "2024-01-15 12:00", "2024-01-15 15:30", TripStatus.COMPLETED));
-        trips.add(new Trip(4L, 2L, drivers.get(1).getId(), "2024-01-16 11:00", "2024-01-16 14:30", TripStatus.SCHEDULED));
+        trips.add(new Trip(4L, 4L, drivers.get(3).getId(), "2024-01-15 12:00", "2024-01-15 15:30", TripStatus.COMPLETED, 14));
+        trips.add(new Trip(4L, 2L, drivers.get(1).getId(), "2024-01-16 11:00", "2024-01-16 14:30", TripStatus.SCHEDULED, 14));
 
         return trips;
     }

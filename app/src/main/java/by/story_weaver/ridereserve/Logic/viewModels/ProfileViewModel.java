@@ -30,16 +30,16 @@ public class ProfileViewModel extends ViewModel {
     public User getProfile() {
         return userRepo.getUser(userRepo.getUserInSystem());
     }
-
-    public void updateProfile(User user) {
-        profileState.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                //todo
-                profileState.postValue(UiState.success(user));
-            } catch (Exception e) {
-                profileState.postValue(UiState.error(e.getMessage()));
-            }
-        });
+    public boolean addGuest(User guest) {
+        try {
+            userRepo.addUser(guest);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public long getIdByEmail(String email) {
+        User user = userRepo.getUserByEmail(email);
+        return user != null ? user.getId() : -1;
     }
 }

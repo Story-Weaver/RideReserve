@@ -29,7 +29,30 @@ public class BookingDao {
         values.put(DatabaseContract.Bookings.COL_PRICE, booking.getPrice());
         db.insertWithOnConflict(DatabaseContract.Bookings.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
+    @SuppressLint("Range")
+    public boolean hasBookingForUserAndTrip(long passengerId, long tripId) {
+        String query = "SELECT COUNT(*) as count FROM " + DatabaseContract.Bookings.TABLE_NAME +
+                " WHERE " + DatabaseContract.Bookings.COL_PASSENGER_ID + " = ? AND " +
+                DatabaseContract.Bookings.COL_TRIP_ID + " = ? AND " +
+                DatabaseContract.Bookings.COL_STATUS + " IN (?, ?)";
 
+        String[] selectionArgs = {
+                String.valueOf(passengerId),
+                String.valueOf(tripId),
+                BookingStatus.CONFIRMED.name(),
+                BookingStatus.PENDING.name()
+        };
+
+        try (Cursor cursor = db.rawQuery(query, selectionArgs)) {
+            if (cursor.moveToFirst()) {
+                int count = cursor.getInt(cursor.getColumnIndex("count"));
+                return count > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     public void removeBooking(int id){
         db.delete(DatabaseContract.Bookings.TABLE_NAME, DatabaseContract.Bookings.COL_ID + " = ?", new String[]{String.valueOf(id)});
     }

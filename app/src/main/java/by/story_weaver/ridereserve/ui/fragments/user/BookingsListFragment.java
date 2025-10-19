@@ -82,10 +82,10 @@ public class BookingsListFragment extends Fragment {
 //            bookingViewModel.addVehicle(i);
 //        }
         //for (Trip i: testData.trips){
-            //bookingViewModel.addTrip(new Trip(1,1,2,"sd", "sdf", TripStatus.SCHEDULED));
+            bookingViewModel.addTrip(new Trip(1,1,19,"sd", "sdf", TripStatus.SCHEDULED,14));
        // }
         //for (Booking i: testData.bookings){
-            //bookingViewModel.addBooking(new Booking(1, 1, 1, 8,true,true, BookingStatus.CANCELLED, 14000));
+            bookingViewModel.addBooking(new Booking(1, 1, 1, 8,true,true, BookingStatus.CANCELLED, 14000));
         //}
     }
     private void setupRecyclerView() {

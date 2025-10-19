@@ -10,4 +10,5 @@ public interface BookingRepository {
     Booking getBooking(int id);
     List<Booking> getBookingsByTrip(int tripId);
     List<Booking> getAll();
+    boolean hasBookingForUserAndTrip(long passengerId, long tripId);
 }

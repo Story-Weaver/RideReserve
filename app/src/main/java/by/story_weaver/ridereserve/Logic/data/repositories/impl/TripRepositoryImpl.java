@@ -23,10 +23,10 @@ public class TripRepositoryImpl implements TripRepository {
     public void removeTrip(int id) { dao.removeTrip(id); }
 
     @Override
-    public Trip getTrip(int id) { return dao.getTrip(id); }
+    public Trip getTrip(long id) { return dao.getTrip(id); }
 
     @Override
-    public List<Trip> getTripsByRoute(int routeId) { return dao.getTripsByRoute(routeId); }
+    public List<Trip> getTripsByRoute(long routeId) { return dao.getTripsByRoute(routeId); }
 
     @Override public List<Trip> getTripsByDriver(int driverId) { return dao.getTripsByDriver(driverId); }
     @Override public List<Trip> getAll() { return dao.getAll(); }

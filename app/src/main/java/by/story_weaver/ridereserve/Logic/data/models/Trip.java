@@ -10,15 +10,19 @@ public class Trip {
     private String departureTime;
     private String arrivalTime; //время отправки
     private TripStatus status;
+    private double price;
+
 
     public Trip() {}
-    public Trip(long routeId, long vehicleId, long driverId, String departureTime, String arrivalTime, TripStatus status){
+    public Trip(long routeId, long vehicleId, long driverId, String departureTime, String arrivalTime, TripStatus status, double price){
         this.routeId = routeId; this.vehicleId = vehicleId; this.driverId = driverId;
         this.departureTime = departureTime; this.arrivalTime = arrivalTime; this.status = status;
+        this.price = price;
     }
-    public Trip(long id, long routeId, long vehicleId, long driverId, String departureTime, String arrivalTime, TripStatus status){
+    public Trip(long id, long routeId, long vehicleId, long driverId, String departureTime, String arrivalTime, TripStatus status, double price){
         this.id = id; this.routeId = routeId; this.vehicleId = vehicleId; this.driverId = driverId;
         this.departureTime = departureTime; this.arrivalTime = arrivalTime; this.status = status;
+        this.price = price;
     }
 
     // getters/setters...
@@ -36,4 +40,10 @@ public class Trip {
     public void setArrivalTime(String arrivalTime) { this.arrivalTime = arrivalTime; }
     public TripStatus getStatus() { return status; }
     public void setStatus(TripStatus status) { this.status = status; }
+    public double getPrice() {
+        return price;
+    }
+    public void setPrice(double price) {
+        this.price = price;
+    }
 }
