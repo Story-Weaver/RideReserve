@@ -42,4 +42,10 @@ public class ProfileViewModel extends ViewModel {
         User user = userRepo.getUserByEmail(email);
         return user != null ? user.getId() : -1;
     }
+    public User getUserById(long id){
+        return userRepo.getUser(id);
+    }
+    public void editUser(User user){
+        userRepo.editUser(user);
+    }
 }

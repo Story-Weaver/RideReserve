@@ -112,7 +112,6 @@ public class BookingViewModel extends ViewModel {
         try {
             return bookingRepo.hasBookingForUserAndTrip(passengerId, tripId);
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }

@@ -41,6 +41,7 @@ import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
+import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -57,6 +58,7 @@ public class BookingFragment extends Fragment {
     private Route currentRoute;
     private BookingViewModel bookingViewModel;
     private ProfileViewModel profileViewModel;
+    private MainViewModel mainViewModel;
     private TextInputEditText etRouteSearch;
     private Spinner spinnerFrom, spinnerTo;
     private RecyclerView recyclerRoutes, recyclerTrips;
@@ -87,6 +89,7 @@ public class BookingFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
         profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         initViews(view);
         setupAdapters();
         setupButtonListeners();
@@ -539,13 +542,12 @@ public class BookingFragment extends Fragment {
 
         try {
             Booking booking = new Booking(-1, currentTrip.getId(), passengerId, 1,
-                    isChild, isPet, BookingStatus.CONFIRMED, totalPrice);
+                    isChild, isPet, BookingStatus.PENDING, totalPrice);
 
             bookingViewModel.addBooking(booking);
             Toast.makeText(requireContext(), "Бронь создана!", Toast.LENGTH_SHORT).show();
 
-            // Возврат на предыдущий экран
-            requireActivity().onBackPressed();
+            mainViewModel.closeFullscreen();
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Ошибка при создании брони: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();

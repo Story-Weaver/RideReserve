@@ -26,12 +26,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void removeUser(int id) {
+    public void removeUser(long id) {
         dao.removeUser(id);
     }
 
     @Override
-    public User getUser(int id) {
+    public User getUser(long id) {
         return dao.getUser(id);
     }
 
@@ -49,6 +49,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void exit(){
             dao.exit();
+    }
+
+    @Override
+    public void editUser(User user) {
+        dao.update(user);
     }
 
     @Override

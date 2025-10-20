@@ -30,12 +30,12 @@ public class UserDao {
         db.insertWithOnConflict(DatabaseContract.Users.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
-    public void removeUser(int id){
+    public void removeUser(long id){
         db.delete(DatabaseContract.Users.TABLE_NAME, DatabaseContract.Users.COL_ID + " = ?", new String[]{String.valueOf(id)});
     }
 
     @SuppressLint("Range")
-    public User getUser(int id){
+    public User getUser(long id){
         try (Cursor cursor = db.rawQuery(
                 "SELECT * FROM " + DatabaseContract.Users.TABLE_NAME + " WHERE " +
                         DatabaseContract.Users.COL_ID + " = ?", new String[]{String.valueOf(id)})) {
@@ -119,6 +119,7 @@ public class UserDao {
         v.put(DatabaseContract.Users.COL_FULL_NAME, u.getFullName());
         v.put(DatabaseContract.Users.COL_PHONE, u.getPhone());
         v.put(DatabaseContract.Users.COL_ROLE, u.getRole() == null ? null : u.getRole().name());
+        v.put(DatabaseContract.Users.COL_IN_SYSTEM, u.getInSystem());
         return db.update(DatabaseContract.Users.TABLE_NAME, v, DatabaseContract.Users.COL_ID + " = ?", new String[]{String.valueOf(u.getId())});
     }
     private User readUserFromCursor(@NonNull Cursor c){

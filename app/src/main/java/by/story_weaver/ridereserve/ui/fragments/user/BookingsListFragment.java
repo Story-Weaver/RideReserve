@@ -2,6 +2,13 @@ package by.story_weaver.ridereserve.ui.fragments.user;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,24 +17,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-
 import java.util.List;
 
 import by.story_weaver.ridereserve.Logic.adapters.BookingAdapter;
-import by.story_weaver.ridereserve.Logic.data.DataSeeder;
 import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
-import by.story_weaver.ridereserve.Logic.data.enums.TripStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
-import by.story_weaver.ridereserve.Logic.data.models.Route;
-import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
-import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
-import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
@@ -43,6 +38,9 @@ public class BookingsListFragment extends Fragment {
     private RecyclerView recyclerView;
     private BookingAdapter adapter;
 
+    private Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private Runnable refreshRunnable;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,63 +51,62 @@ public class BookingsListFragment extends Fragment {
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_bookings_list, container, false);
     }
-    @Override
-    public void onResume() {
-        super.onResume();
-        refreshBookings();
-    }
 
-    private void refreshBookings() {
-        User currentUser = profileViewModel.getProfile();
-        if (currentUser != null) {
-            List<Booking> userBookings = bookingViewModel.getBookingsForUser(currentUser.getId());
-            adapter.updateBookings(userBookings);
-        }
-    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Инициализация ViewModel
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
         profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
-        //addData();
-        findById(view);
-        setupRecyclerView();
-        add.setOnClickListener(v -> {
-            mainViewModel.openFullscreen(new BookingFragment());
-        });
 
+        // Находим View элементы
+        findById(view);
+
+        // Настраиваем RecyclerView
+        setupRecyclerView();
+
+        // Загружаем начальные данные
+        loadInitialData();
+
+        // Настраиваем клики
+        setupClickListeners();
+
+        // Наблюдаем за закрытием других фрагментов
+        setupObservers();
     }
-    private void addData(){
-        DataSeeder seeder = new DataSeeder();
-        DataSeeder.SeederData testData = seeder.generateTestData();
-//        for (User i: testData.users){
-//            authViewModel.addUser(i);
-//        }
-//        for (Route i: testData.routes){
-//            bookingViewModel.addRoute(i);
-//        }
-//        for (Vehicle i: testData.vehicles){
-//            bookingViewModel.addVehicle(i);
-//        }
-        //for (Trip i: testData.trips){
-            bookingViewModel.addTrip(new Trip(1,1,19,"sd", "sdf", TripStatus.SCHEDULED,14));
-       // }
-        //for (Booking i: testData.bookings){
-            bookingViewModel.addBooking(new Booking(1, 1, 1, 8,true,true, BookingStatus.CANCELLED, 14000));
-        //}
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Обновляем данные при возвращении на фрагмент
+        refreshBookings();
     }
+
+    private void findById(View view) {
+        add = view.findViewById(R.id.addButton);
+        recyclerView = view.findViewById(R.id.bookingList);
+    }
+
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
-        adapter = new BookingAdapter(bookingViewModel.getBookinglist(), bookingViewModel.getRoutelist(), bookingViewModel.getTriplist());
+        // Инициализируем адаптер с текущими данными
+        adapter = new BookingAdapter(
+                bookingViewModel.getBookinglist(),
+                bookingViewModel.getRoutelist(),
+                bookingViewModel.getTriplist()
+        );
 
         // Устанавливаем слушатель кликов
         adapter.setOnItemClickListener(new BookingAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 Booking booking = adapter.getBookingAt(position);
-                mainViewModel.openFullscreen(new TripDetailFragment(booking));
+                if (booking != null) {
+                    mainViewModel.openFullscreen(new TripDetailFragment(booking));
+                }
             }
 
             @Override
@@ -121,21 +118,91 @@ public class BookingsListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
     }
 
-    private void findById(View view){
-        add = view.findViewById(R.id.addButton);;
-        recyclerView = view.findViewById(R.id.bookingList);
+    private void loadInitialData() {
+        User currentUser = profileViewModel.getProfile();
+        if (currentUser != null) {
+            List<Booking> userBookings = bookingViewModel.getBookingsForUser(currentUser.getId());
+            adapter.updateBookings(userBookings);
+        }
+    }
+
+    private void setupClickListeners() {
+        add.setOnClickListener(v -> {
+            mainViewModel.openFullscreen(new BookingFragment());
+        });
+    }
+
+    private void setupObservers() {
+        mainViewModel.closeRequest().observe(getViewLifecycleOwner(), request -> {
+            refreshBookings();
+        });
+    }
+
+    private void refreshBookings() {
+        Log.v("list", "check");
+        if (refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+        Log.v("list", "load");
+        refreshRunnable = () -> {
+            Log.v("list", "start load");
+            User currentUser = profileViewModel.getProfile();
+            if (currentUser != null && adapter != null) {
+                List<Booking> userBookings = bookingViewModel.getBookingsForUser(currentUser.getId());
+                adapter.updateBookings(userBookings);
+                Log.v("list", "set");
+            }
+        };
+        refreshHandler.postDelayed(refreshRunnable, 1000);
     }
 
     private void showActionMenu(int position) {
+        Booking booking = adapter.getBookingAt(position);
+        if (booking == null) return;
+
         new AlertDialog.Builder(requireActivity())
                 .setTitle("Действия с бронью")
-                .setItems(new String[]{"Отменить", "Изменить", "Поделиться"}, (dialog, which) -> {
+                .setItems(new String[]{"Отменить", "Изменить"}, (dialog, which) -> {
                     switch (which) {
-                        //case 0: cancelBooking(position); break;
-                        //case 1: editBooking(position); break;
-                        //case 2: shareBooking(position); break;
+                        case 0:
+                            cancelBooking(position);
+                            break;
+                        case 1:
+                            editBooking(position);
+                            break;
                     }
                 })
                 .show();
+    }
+
+    private void cancelBooking(int position) {
+        Booking booking = adapter.getBookingAt(position);
+        if (booking != null) {
+            bookingViewModel.changeStatusBooking(booking.getId(), BookingStatus.CANCELLED);
+            refreshBookings();
+        }
+    }
+
+    private void editBooking(int position) {
+        Booking booking = adapter.getBookingAt(position);
+        if (booking != null) {
+            // TODO: Реализовать логику редактирования бронирования
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
     }
 }

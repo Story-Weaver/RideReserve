@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/white">
+    android:orientation="vertical">
 
     <!-- Заголовок и фильтры -->
     <androidx.cardview.widget.CardView
@@ -12,7 +11,6 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="0dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/white"
         android:layout_marginBottom="8dp">
 
         <LinearLayout
@@ -28,7 +26,6 @@
                 android:text="Маршруты"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
                 android:gravity="center"
                 android:layout_marginBottom="16dp" />
 
@@ -83,7 +80,5 @@
         android:layout_weight="1"
         android:padding="8dp"
         android:clipToPadding="false" />
-
-    <!-- FAB для добавления маршрута -->
 
 </LinearLayout>

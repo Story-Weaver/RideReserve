@@ -11,6 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +21,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.List;
+
 import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
+import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
@@ -38,6 +44,8 @@ public class ProfileFragment extends Fragment {
     private MainViewModel mainViewModel;
     private AuthViewModel authViewModel;
     private User currentUser;
+    private Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private Runnable refreshRunnable;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -53,8 +61,9 @@ public class ProfileFragment extends Fragment {
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         currentUser = profileViewModel.getProfile();
+        setupObservers();
         setUserRole(currentUser.getRole());
-        setUserData();
+        setUserData(currentUser);
     }
     private void findById(View view){
         tvUserName = view.findViewById(R.id.tvUserName);
@@ -87,7 +96,9 @@ public class ProfileFragment extends Fragment {
     }
     private void setupClickListeners() {
         layoutEditProfile.setOnClickListener(v -> {
-            //mainViewModel.openFullscreen(new EditProfileFragment());
+            long userIdToEdit = profileViewModel.getProfile().getId();
+            UserEditFragment editFragment = UserEditFragment.newInstance(userIdToEdit);
+            mainViewModel.openFullscreen(editFragment);
         });
 
         layoutTripHistory.setOnClickListener(v -> {
@@ -112,9 +123,25 @@ public class ProfileFragment extends Fragment {
             requireActivity().finish();
         });
     }
-    private void setUserData(){
-        tvUserName.setText(currentUser.getFullName());
-        tvEmail.setText(currentUser.getEmail());
-        tvPhone.setText(currentUser.getPhone());
+    private void setUserData(User user){
+        tvUserName.setText(user.getFullName());
+        tvEmail.setText(user.getEmail());
+        tvPhone.setText(user.getPhone());
+    }
+    private void setupObservers() {
+        mainViewModel.closeRequest().observe(getViewLifecycleOwner(), request -> {
+            refreshData();
+        });
+    }
+
+    private void refreshData() {
+        if (refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+        refreshRunnable = () -> {
+            User currentUser = profileViewModel.getProfile();
+            setUserData(currentUser);
+        };
+        refreshHandler.postDelayed(refreshRunnable, 1000);
     }
 }
