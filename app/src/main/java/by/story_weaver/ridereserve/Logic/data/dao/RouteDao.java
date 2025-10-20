@@ -25,6 +25,8 @@ public class RouteDao {
         values.put(DatabaseContract.Routes.COL_NAME, route.getName());
         values.put(DatabaseContract.Routes.COL_ORIGIN, route.getOrigin());
         values.put(DatabaseContract.Routes.COL_DESTINATION, route.getDestination());
+        values.put(DatabaseContract.Routes.COL_DISTANCE, route.getDistance());
+        values.put(DatabaseContract.Routes.COL_TIME, route.getTime());
         values.put(DatabaseContract.Routes.COL_STOPS_JSON, route.getStopsJson());
         db.insertWithOnConflict(DatabaseContract.Routes.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
@@ -106,6 +108,8 @@ public class RouteDao {
         route.setName(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_NAME)));
         route.setOrigin(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_ORIGIN)));
         route.setDestination(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_DESTINATION)));
+        route.setDistance(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_DISTANCE)));
+        route.setTime(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_TIME)));
         route.setStopsJson(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.Routes.COL_STOPS_JSON)));
         return route;
     }

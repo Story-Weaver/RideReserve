@@ -22,6 +22,8 @@ public final class DatabaseContract {
         public static final String COL_NAME = "name";
         public static final String COL_ORIGIN = "origin";
         public static final String COL_DESTINATION = "destination";
+        public static final String COL_DISTANCE = "distance";
+        public static final String COL_TIME = "time";
         public static final String COL_STOPS_JSON = "stops_json";
     }
 

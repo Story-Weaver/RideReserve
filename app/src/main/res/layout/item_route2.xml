@@ -52,7 +52,7 @@
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
-                    android:src="@drawable/minibus"
+                    android:src="@drawable/line"
                     app:tint="@color/green" />
 
                 <TextView
@@ -76,7 +76,7 @@
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
-                    android:src="@drawable/minibus"
+                    android:src="@drawable/line"
                     app:tint="@color/red" />
 
                 <TextView
@@ -117,7 +117,7 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@drawable/minibus"
+                    android:src="@drawable/time"
                     app:tint="@color/gray_600" />
 
                 <TextView
@@ -141,7 +141,7 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@drawable/minibus"
+                    android:src="@drawable/distance"
                     app:tint="@color/gray_600" />
 
                 <TextView

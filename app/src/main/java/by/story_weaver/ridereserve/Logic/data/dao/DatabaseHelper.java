@@ -37,6 +37,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Routes.COL_NAME + " TEXT, " +
                 DatabaseContract.Routes.COL_ORIGIN + " TEXT, " +
                 DatabaseContract.Routes.COL_DESTINATION + " TEXT, " +
+                DatabaseContract.Routes.COL_DISTANCE + " DECIMAL, " +
+                DatabaseContract.Routes.COL_TIME + " TEXT, " +
                 DatabaseContract.Routes.COL_STOPS_JSON + " TEXT" +
                 ");");
 

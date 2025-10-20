@@ -64,16 +64,16 @@ public class DataSeeder {
     private List<Route> generateRoutes() {
         List<Route> routes = new ArrayList<>();
 
-        routes.add(new Route(1L, "Маршрут 107", "Москва", "Санкт-Петербург",
+        routes.add(new Route(1L, "Маршрут 107", "Москва", "Санкт-Петербург",1400, "1ч 30м",
                 "[\"Москва\", \"Тверь\", \"Вышний Волочек\", \"Новгород\", \"Санкт-Петербург\"]"));
 
-        routes.add(new Route(2L, "Маршрут 205", "Москва", "Казань",
+        routes.add(new Route(2L, "Маршрут 205", "Москва", "Казань", 100, "30м",
                 "[\"Москва\", \"Владимир\", \"Нижний Новгород\", \"Чебоксары\", \"Казань\"]"));
 
-        routes.add(new Route(3L, "Маршрут 301", "Москва", "Сочи",
+        routes.add(new Route(3L, "Маршрут 301", "Москва", "Сочи", 1800, "2ч 30м",
                 "[\"Москва\", \"Тула\", \"Воронеж\", \"Ростов-на-Дону\", \"Краснодар\", \"Сочи\"]"));
 
-        routes.add(new Route(4L, "Маршрут 412", "Минск", "Вильнюс",
+        routes.add(new Route(4L, "Маршрут 412", "Минск", "Вильнюс", 400, "1ч",
                 "[\"Минск\", \"Молодечно\", \"Ошмяны\", \"Вильнюс\"]"));
 
         return routes;
@@ -118,21 +118,21 @@ public class DataSeeder {
         List<User> drivers = getUsersByRole(users, UserRole.DRIVER);
 
         // Рейсы для маршрута Москва - СПб
-        trips.add(new Trip(1L, 1L, drivers.get(0).getId(), "2024-01-15 08:00", "2024-01-15 14:30", TripStatus.SCHEDULED, 14));
-        trips.add(new Trip(1L, 2L, drivers.get(1).getId(), "2024-01-15 14:00", "2024-01-15 20:30", TripStatus.SCHEDULED, 14));
-        trips.add(new Trip(1L, 3L, drivers.get(2).getId(), "2024-01-16 09:00", "2024-01-16 15:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(1L, 4, drivers.get(0).getId(), "2024-01-15 08:00", "2024-01-15 14:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(1L, 5, drivers.get(1).getId(), "2024-01-15 14:00", "2024-01-15 20:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(1L, 6, drivers.get(2).getId(), "2024-01-16 09:00", "2024-01-16 15:30", TripStatus.SCHEDULED, 14));
 
         // Рейсы для маршрута Москва - Казань
-        trips.add(new Trip(2L, 1L, drivers.get(0).getId(), "2024-01-15 10:00", "2024-01-15 17:00", TripStatus.SCHEDULED, 14));
-        trips.add(new Trip(2L, 4L, drivers.get(3).getId(), "2024-01-16 07:30", "2024-01-16 14:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(2L, 4, drivers.get(0).getId(), "2024-01-15 10:00", "2024-01-15 17:00", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(2L, 7, drivers.get(3).getId(), "2024-01-16 07:30", "2024-01-16 14:30", TripStatus.SCHEDULED, 14));
 
         // Рейсы для маршрута Москва - Сочи
-        trips.add(new Trip(3L, 3L, drivers.get(2).getId(), "2024-01-15 06:00", "2024-01-15 18:00", TripStatus.IN_PROGRESS, 14));
-        trips.add(new Trip(3L, 1L, drivers.get(0).getId(), "2024-01-16 05:30", "2024-01-16 17:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(3L, 6, drivers.get(2).getId(), "2024-01-15 06:00", "2024-01-15 18:00", TripStatus.IN_PROGRESS, 14));
+        trips.add(new Trip(3L, 4, drivers.get(0).getId(), "2024-01-16 05:30", "2024-01-16 17:30", TripStatus.SCHEDULED, 14));
 
         // Рейсы для маршрута Минск - Вильнюс
-        trips.add(new Trip(4L, 4L, drivers.get(3).getId(), "2024-01-15 12:00", "2024-01-15 15:30", TripStatus.COMPLETED, 14));
-        trips.add(new Trip(4L, 2L, drivers.get(1).getId(), "2024-01-16 11:00", "2024-01-16 14:30", TripStatus.SCHEDULED, 14));
+        trips.add(new Trip(4L, 7, drivers.get(3).getId(), "2024-01-15 12:00", "2024-01-15 15:30", TripStatus.COMPLETED, 14));
+        trips.add(new Trip(4L, 5, drivers.get(1).getId(), "2024-01-16 11:00", "2024-01-16 14:30", TripStatus.SCHEDULED, 14));
 
         return trips;
     }

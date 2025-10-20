@@ -1,5 +1,6 @@
 package by.story_weaver.ridereserve.Logic.adapters;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,13 +91,14 @@ public class Routes2Adapter extends RecyclerView.Adapter<Routes2Adapter.RouteVie
             });
         }
 
+        @SuppressLint("SetTextI18n")
         public void bind(Route route) {
             tvRouteName.setText(route.getName());
-            //tvDeparture.setText(route.getDeparturePoint());
+            tvDeparture.setText(route.getOrigin());
             tvDestination.setText(route.getDestination());
 
-            //tvDuration.setText(formatDuration(route.getDuration()));
-            //tvDistance.setText(formatDistance(route.getDistance()));
+            tvDuration.setText(route.getTime());
+            tvDistance.setText(route.getDistance()+"");
         }
 
         private String formatDuration(int durationMinutes) {
