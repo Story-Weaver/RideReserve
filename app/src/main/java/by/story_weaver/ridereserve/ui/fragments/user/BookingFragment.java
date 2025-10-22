@@ -3,6 +3,8 @@ package by.story_weaver.ridereserve.ui.fragments.user;
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +46,7 @@ import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
+import by.story_weaver.ridereserve.ui.fragments.UserEditFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -72,6 +75,20 @@ public class BookingFragment extends Fragment {
     private double totalPrice = 0;
     private double petPrice = 200;
     private double childPrice = 300;
+    private long spRoute = -1;
+    private List<Route> allRoutes = null;
+    private static final String ARG_ROUTE = "route";
+    private Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private Runnable refreshRunnable;
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            spRoute = getArguments().getLong(ARG_ROUTE);
+        }
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,6 +99,14 @@ public class BookingFragment extends Fragment {
     public void onResume() {
         super.onResume();
         resetToInitialState();
+    }
+
+    public static BookingFragment newInstance(long spRoute) {
+        BookingFragment fragment = new BookingFragment();
+        Bundle args = new Bundle();
+        args.putLong(ARG_ROUTE, spRoute);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -97,11 +122,30 @@ public class BookingFragment extends Fragment {
         loadCurrentUser();
         loadInitialData();
 
-
-        // Всегда начинаем с чистого состояния - выбор маршрута
+        spRoute();
         resetToInitialState();
     }
+    private void spRoute(){
+        if(spRoute != -1){
+            if(allRoutes != null){
+                for (Route i: allRoutes) {
+                    if(i.getId() == spRoute){
+                        onRouteSelected(i);
+                    }
+                }
+            } else {
+                refreshRoute();
+            }
+        }
+    }
 
+    private void refreshRoute() {
+        if (refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+        refreshRunnable = this::spRoute;
+        refreshHandler.postDelayed(refreshRunnable, 500);
+    }
     private void initViews(View view) {
         cbUseMyData = view.findViewById(R.id.cbUseMyData);
         cbChildSeat = view.findViewById(R.id.cbChildSeat);
@@ -136,17 +180,14 @@ public class BookingFragment extends Fragment {
     }
 
     private void setupAdapters() {
-        // Адаптер для списка маршрутов
         routesAdapter = new RoutesAdapter(new ArrayList<>(), this::onRouteSelected);
         recyclerRoutes.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerRoutes.setAdapter(routesAdapter);
 
-        // Адаптер для списка рейсов
         tripsAdapter = new TripsAdapter(new ArrayList<>(), this::onTripSelected);
         recyclerTrips.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerTrips.setAdapter(tripsAdapter);
 
-        // Адаптеры для спиннеров пунктов отправления/назначения
         ArrayAdapter<String> fromAdapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, getCities());
         fromAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -199,10 +240,10 @@ public class BookingFragment extends Fragment {
     }
 
     private void setupObservers() {
-        // Наблюдаем за списком маршрутов
         bookingViewModel.getRoutes().observe(getViewLifecycleOwner(), routes -> {
             if (routes != null && !routes.isEmpty()) {
                 routesAdapter.updateRoutes(routes);
+                allRoutes = routes;
                 cardRoutesList.setVisibility(View.VISIBLE);
             } else {
                 cardRoutesList.setVisibility(View.GONE);
@@ -283,13 +324,10 @@ public class BookingFragment extends Fragment {
 
     private void onRouteSelected(Route route) {
         currentRoute = route;
-        // Показываем загрузку
         progressTrips.setVisibility(View.VISIBLE);
 
-        // Загружаем рейсы для выбранного маршрута
         bookingViewModel.loadTripsForRoute(route.getId());
 
-        // Скрываем список маршрутов пока загружаем рейсы
         cardRoutesList.setVisibility(View.GONE);
     }
 
@@ -497,14 +535,12 @@ public class BookingFragment extends Fragment {
                 return;
             }
 
-            // Получаем ID только что созданного гостя
             passengerId = profileViewModel.getIdByEmail(currentUser.getEmail());
             if (passengerId == -1) {
                 Toast.makeText(requireContext(), "Не удалось получить ID пользователя", Toast.LENGTH_SHORT).show();
                 return;
             }
         } else {
-            // Используем ID текущего пользователя
             if (currentUser != null) {
                 passengerId = currentUser.getId();
             } else {
@@ -513,19 +549,16 @@ public class BookingFragment extends Fragment {
             }
         }
 
-        // Проверяем, что passengerId валиден
         if (passengerId == -1) {
             Toast.makeText(requireContext(), "Неверный ID пользователя", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Проверяем, что currentTrip существует
         if (currentTrip.getId() == -1) {
             Toast.makeText(requireContext(), "Неверный рейс", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // ПРОВЕРКА: Нельзя бронировать один рейс дважды для одного пользователя
         boolean hasExistingBooking = bookingViewModel.hasBookingForUserAndTrip(passengerId, currentTrip.getId());
         if (hasExistingBooking) {
             Toast.makeText(requireContext(), "Вы уже забронировали этот рейс", Toast.LENGTH_LONG).show();
@@ -552,5 +585,10 @@ public class BookingFragment extends Fragment {
             Toast.makeText(requireContext(), "Ошибка при создании брони: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        refreshHandler.removeCallbacks(refreshRunnable);
     }
 }

@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.activities.MainActivity;
@@ -46,10 +47,14 @@ public class RegistrationFragment extends Fragment {
         findById(view);
         observeReg();
         reg.setOnClickListener(v -> {
-            String mail = email.getText().toString();
-            String password = pass.getText().toString();
-            if (!mail.isEmpty() && !password.isEmpty()) {
-                viewModel.register(mail, password);
+            User user = new User();
+            user.setEmail(email.getText().toString());
+            user.setPassword(pass.getText().toString());
+            user.setFullName(name.getText().toString());
+            user.setPhone(phone.getText().toString());
+            if (!email.getText().toString().isEmpty() && !pass.getText().toString().isEmpty()
+                    && !name.getText().toString().isEmpty() && !phone.getText().toString().isEmpty()) {
+                viewModel.register(user);
             }
         });
     }

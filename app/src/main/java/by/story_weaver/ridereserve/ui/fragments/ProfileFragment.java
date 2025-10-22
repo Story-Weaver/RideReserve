@@ -144,4 +144,10 @@ public class ProfileFragment extends Fragment {
         };
         refreshHandler.postDelayed(refreshRunnable, 1000);
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        refreshHandler.removeCallbacks(refreshRunnable);
+    }
 }

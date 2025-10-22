@@ -20,9 +20,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import by.story_weaver.ridereserve.Logic.adapters.BookingAdapter;
+import by.story_weaver.ridereserve.Logic.data.DataSeeder;
 import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
+import by.story_weaver.ridereserve.Logic.data.models.Route;
+import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
+import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
+import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
@@ -35,6 +40,7 @@ public class BookingsListFragment extends Fragment {
     private MainViewModel mainViewModel;
     private BookingViewModel bookingViewModel;
     private ProfileViewModel profileViewModel;
+    private AuthViewModel authViewModel;
     private RecyclerView recyclerView;
     private BookingAdapter adapter;
 
@@ -60,6 +66,7 @@ public class BookingsListFragment extends Fragment {
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
         profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         // Находим View элементы
         findById(view);
@@ -75,8 +82,23 @@ public class BookingsListFragment extends Fragment {
 
         // Наблюдаем за закрытием других фрагментов
         setupObservers();
-    }
 
+        addData();
+    }
+    private void addData(){
+        DataSeeder data = new DataSeeder();
+        DataSeeder.SeederData finalData = data.generateTestData();
+//        for (User i: finalData.users){
+//            authViewModel.addUser(i);
+//        }
+//        for(Vehicle i: finalData.vehicles){
+//            bookingViewModel.addVehicle(i);
+//        }
+//        for(Route i: finalData.routes){
+//            bookingViewModel.addRoute(i);
+//        }
+        //bookingViewModel.addTrip(new Trip());
+    }
     @Override
     public void onResume() {
         super.onResume();

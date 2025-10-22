@@ -63,12 +63,12 @@ public class AuthViewModel extends ViewModel {
         userRepo.exit();
     }
 
-    public void register(final String email, final String password) {
+    public void register(User user) {
         currentUserStateReg.postValue(UiState.loading());
         executor.execute(() -> {
             try {
-                User user = new User(1, email, password, "fam", "num",1, UserRole.PASSENGER);
-                userRepo.addUser(user);
+                User u = new User(1, user.getEmail(), user.getPassword(), user.getFullName(), user.getPhone(),1, UserRole.PASSENGER);
+                userRepo.addUser(u);
                 currentUserStateReg.postValue(UiState.success(user));
             } catch (Exception e) {
                 currentUserStateReg.postValue(UiState.error(e.getMessage()));

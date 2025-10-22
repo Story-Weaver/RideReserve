@@ -27,6 +27,7 @@ public class UserDao {
         values.put(DatabaseContract.Users.COL_FULL_NAME, user.getFullName());
         values.put(DatabaseContract.Users.COL_PHONE, user.getPhone());
         values.put(DatabaseContract.Users.COL_ROLE, user.getRole().name());
+        values.put(DatabaseContract.Users.COL_IN_SYSTEM, user.getInSystem());
         db.insertWithOnConflict(DatabaseContract.Users.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 

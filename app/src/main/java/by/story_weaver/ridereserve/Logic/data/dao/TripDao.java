@@ -26,6 +26,7 @@ public class TripDao {
         values.put(DatabaseContract.Trips.COL_DEPARTURE_TIME, trip.getDepartureTime());
         values.put(DatabaseContract.Trips.COL_ARRIVAL_TIME, trip.getArrivalTime());
         values.put(DatabaseContract.Trips.COL_STATUS, trip.getStatus().name());
+        values.put(DatabaseContract.Trips.COL_PRICE, trip.getPrice());
         db.insertWithOnConflict(DatabaseContract.Trips.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 

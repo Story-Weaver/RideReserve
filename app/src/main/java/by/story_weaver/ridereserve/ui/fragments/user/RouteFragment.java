@@ -1,6 +1,7 @@
 package by.story_weaver.ridereserve.ui.fragments.user;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +19,16 @@ import java.util.List;
 import by.story_weaver.ridereserve.Logic.adapters.Routes2Adapter;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
+import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.R;
+import by.story_weaver.ridereserve.ui.fragments.UserEditFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteClickListener {
 
     private BookingViewModel bookingViewModel;
+    private MainViewModel mainViewModel;
     private Routes2Adapter adapter;
     private RecyclerView recyclerView;
     private TextInputEditText etSearch;
@@ -38,7 +42,8 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        bookingViewModel = new ViewModelProvider(this).get(BookingViewModel.class);
+        bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         initViews(view);
         setupRecyclerView();
         setupObservers();
@@ -60,23 +65,18 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
 
     @Override
     public void onBookClick(Route route) {
+        Log.v("Route", "book");
+        openBookingScreen(route);
+    }
+    @Override
+    public void onRouteClick(Route route) {
+        Log.v("Route", "click");
         openBookingScreen(route);
     }
 
-    @Override
-    public void onRouteClick(Route route) {
-        openRouteDetails(route);
-    }
-
-    private void openAddRouteScreen() {
-    }
-
-    private void openEditRouteScreen(Route route) {
-    }
-
     private void openBookingScreen(Route route) {
-    }
-
-    private void openRouteDetails(Route route) {
+        BookingFragment book = BookingFragment.newInstance(route.getId());
+        mainViewModel.openFullscreen(book);
+        Log.v("Route", "open");
     }
 }
