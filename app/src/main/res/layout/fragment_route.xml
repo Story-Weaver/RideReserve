@@ -58,13 +58,6 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Кнопка фильтра -->
-                <ImageButton
-                    android:id="@+id/btnFilter"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/filter"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="@color/gray_600" />
 
             </LinearLayout>
 

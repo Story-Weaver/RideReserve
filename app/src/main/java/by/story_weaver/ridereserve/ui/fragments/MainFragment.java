@@ -33,7 +33,6 @@ import by.story_weaver.ridereserve.ui.activities.AuthActivity;
 import by.story_weaver.ridereserve.ui.fragments.admin.AdminDashboardFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverHomeFragment;
-import by.story_weaver.ridereserve.ui.fragments.driver.TripBoardFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.RouteFragment;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -224,7 +223,7 @@ public class MainFragment extends Fragment {
             if (id == R.id.menu_driver_home_driver) {
                 replaceMainFragment(new DriverHomeFragment(), "driver_home");
             } else if (id == R.id.menu_trip_board_driver) {
-                replaceMainFragment(new TripBoardFragment(), "trip_board");
+                replaceMainFragment(new DriverHomeFragment(), "trip_board");
             } else if (id == R.id.menu_profile_driver) {
                 replaceMainFragment(new ProfileFragment(), "profile");
             } else {

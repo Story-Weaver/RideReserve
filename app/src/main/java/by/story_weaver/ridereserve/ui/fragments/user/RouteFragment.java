@@ -1,18 +1,23 @@
 package by.story_weaver.ridereserve.ui.fragments.user;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import com.google.android.material.textfield.TextInputEditText;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +26,6 @@ import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.R;
-import by.story_weaver.ridereserve.ui.fragments.UserEditFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -32,6 +36,8 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
     private Routes2Adapter adapter;
     private RecyclerView recyclerView;
     private TextInputEditText etSearch;
+    private List<Route> originalRoutes = new ArrayList<>();
+    private List<Route> filteredRoutes = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,7 +52,8 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         initViews(view);
         setupRecyclerView();
-        setupObservers();
+        loadRoutes();
+        setupSearchFilter();
     }
 
     private void initViews(View view) {
@@ -59,8 +66,49 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
     }
-    private void setupObservers() {
-       adapter.updateRoutes(bookingViewModel.getRoutelist());
+
+    private void loadRoutes() {
+        originalRoutes = bookingViewModel.getRoutelist();
+        filteredRoutes = new ArrayList<>(originalRoutes);
+        adapter.updateRoutes(filteredRoutes);
+    }
+
+    private void setupSearchFilter() {
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                filterRoutes(s.toString());
+            }
+        });
+    }
+
+    private void filterRoutes(String searchText) {
+        if (searchText.isEmpty()) {
+            filteredRoutes = new ArrayList<>(originalRoutes);
+        } else {
+            filteredRoutes = new ArrayList<>();
+            String lowerCaseQuery = searchText.toLowerCase().trim();
+
+            for (Route route : originalRoutes) {
+                if (containsIgnoreCase(route.getName(), lowerCaseQuery) ||
+                        containsIgnoreCase(route.getOrigin(), lowerCaseQuery) ||
+                        containsIgnoreCase(route.getDestination(), lowerCaseQuery)) {
+                    filteredRoutes.add(route);
+                }
+            }
+        }
+        adapter.updateRoutes(filteredRoutes);
+    }
+
+    private boolean containsIgnoreCase(String source, String query) {
+        if (source == null || query == null) return false;
+        return source.toLowerCase().contains(query);
     }
 
     @Override
@@ -68,6 +116,7 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
         Log.v("Route", "book");
         openBookingScreen(route);
     }
+
     @Override
     public void onRouteClick(Route route) {
         Log.v("Route", "click");
