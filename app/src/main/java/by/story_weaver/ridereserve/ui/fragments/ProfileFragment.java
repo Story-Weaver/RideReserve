@@ -31,6 +31,7 @@ import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.activities.AuthActivity;
+import by.story_weaver.ridereserve.ui.fragments.user.SupportFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -114,7 +115,7 @@ public class ProfileFragment extends Fragment {
         });
 
         layoutHelp.setOnClickListener(v -> {
-            //mainViewModel.openFullscreen(new SupportFragment());
+            mainViewModel.openFullscreen(new SupportFragment());
         });
 
         layoutLogout.setOnClickListener(v -> {
