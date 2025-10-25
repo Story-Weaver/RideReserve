@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
+import by.story_weaver.ridereserve.Logic.data.enums.TripStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Seat;
@@ -34,6 +35,7 @@ public class BookingViewModel extends ViewModel {
     private MutableLiveData<List<Route>> routes = new MutableLiveData<>();
     private MutableLiveData<List<Trip>> trips = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> somethingChanged = new MutableLiveData<>(false);
     private MutableLiveData<List<Booking>> bookingListLiveData = new MutableLiveData<>();
     private MutableLiveData<List<Route>> routeListLiveData = new MutableLiveData<>();
     private MutableLiveData<List<Trip>> tripListLiveData = new MutableLiveData<>();
@@ -62,6 +64,9 @@ public class BookingViewModel extends ViewModel {
     public LiveData<List<Trip>> getTrips() { return trips; }
     public LiveData<Boolean> getIsLoading() {
         return isLoading;
+    }
+    public LiveData<Boolean> getIsSomethingChanged() {
+        return somethingChanged;
     }
     public List<Booking> getBookinglist(){
         return bookingRepo.getAll();
@@ -108,7 +113,6 @@ public class BookingViewModel extends ViewModel {
         isLoading.postValue(false);
     }
     public boolean hasBookingForUserAndTrip(long passengerId, long tripId) {
-        // Синхронная проверка - будьте осторожны, не вызывайте в UI потоке
         try {
             return bookingRepo.hasBookingForUserAndTrip(passengerId, tripId);
         } catch (Exception e) {
@@ -125,10 +129,60 @@ public class BookingViewModel extends ViewModel {
         return userBookings;
     }
     public void changeStatusBooking(long bookingId, BookingStatus status) {
-        Booking booking = bookingRepo.getBooking(bookingId);
-        booking.setStatus(status);
-        bookingRepo.removeBooking(booking.getId());
-        bookingRepo.addBooking(booking);
+        try {
+            Booking booking = bookingRepo.getBooking(bookingId);
+            if (booking == null) {
+                return;
+            }
+            try {
+                bookingRepo.updateStatusBooking(bookingId, status);
+                somethingChanged.postValue(true);
+            } catch (Throwable ignored) {
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    public void changeStatusTrip(long tripId, TripStatus status) {
+        try {
+            Trip trip = tripRepo.getTrip(tripId);
+            if (trip != null) {
+                try {
+                    tripRepo.updateStatusTrip(tripId, status);
+                    somethingChanged.postValue(true);
+                } catch (Throwable ignored) { }
+            } else {
+                return;
+            }
+
+            List<Booking> all = bookingRepo.getAll();
+            if (all == null || all.isEmpty()) return;
+
+            for (Booking b : all) {
+                if (b.getTripId() == tripId) {
+                    try {
+                        bookingRepo.updateStatusBooking(b.getId(), mapTripStatusToBookingStatus(status));
+                    } catch (Throwable ignored) { }
+                }
+            }
+            somethingChanged.postValue(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private BookingStatus mapTripStatusToBookingStatus(TripStatus tripStatus) {
+        switch (tripStatus) {
+            case CANCELLED:
+                return BookingStatus.CANCELLED;
+            case COMPLETED:
+                return BookingStatus.COMPLETED;
+            default:
+                return BookingStatus.CONFIRMED;
+        }
+    }
+
 }
 

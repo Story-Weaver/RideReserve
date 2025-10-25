@@ -1,9 +1,13 @@
 package by.story_weaver.ridereserve.Logic.data.dao;
 
+import static android.content.ContentValues.TAG;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,5 +120,49 @@ public class BookingDao {
         }
         return list;
     }
+    public boolean updateBooking(Booking booking) {
+        if (booking == null) return false;
+        ContentValues cv = new ContentValues();
+        cv.put(DatabaseContract.Bookings.COL_TRIP_ID, booking.getTripId());
+        cv.put(DatabaseContract.Bookings.COL_PASSENGER_ID, booking.getPassengerId());
+        cv.put(DatabaseContract.Bookings.COL_SEAT_NUMBER, booking.getSeatNumber());
+        cv.put(DatabaseContract.Bookings.COL_CHILD_SEAT_NEEDED, booking.isChildSeatNeeded() ? 1 : 0);
+        cv.put(DatabaseContract.Bookings.COL_HAS_PET, booking.isHasPet() ? 1 : 0);
+        cv.put(DatabaseContract.Bookings.COL_STATUS, booking.getStatus() != null ? booking.getStatus().name() : null);
+        cv.put(DatabaseContract.Bookings.COL_PRICE, booking.getPrice());
 
+        String where = DatabaseContract.Bookings.COL_ID + " = ?";
+        String[] whereArgs = new String[]{ String.valueOf(booking.getId()) };
+
+        db.beginTransaction();
+        try {
+            int rows = db.update(DatabaseContract.Bookings.TABLE_NAME, cv, where, whereArgs);
+            db.setTransactionSuccessful();
+            return rows > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "updateBooking error", e);
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
+    public boolean updateBookingStatus(long bookingId, BookingStatus status) {
+        ContentValues cv = new ContentValues();
+        cv.put(DatabaseContract.Bookings.COL_STATUS, status != null ? status.name() : null);
+
+        String where = DatabaseContract.Bookings.COL_ID + " = ?";
+        String[] whereArgs = new String[]{ String.valueOf(bookingId) };
+
+        db.beginTransaction();
+        try {
+            int rows = db.update(DatabaseContract.Bookings.TABLE_NAME, cv, where, whereArgs);
+            db.setTransactionSuccessful();
+            return rows > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "updateBookingStatus error", e);
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
 }

@@ -33,6 +33,7 @@ import by.story_weaver.ridereserve.ui.activities.AuthActivity;
 import by.story_weaver.ridereserve.ui.fragments.admin.AdminDashboardFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverHomeFragment;
+import by.story_weaver.ridereserve.ui.fragments.driver.DriverTripFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.RouteFragment;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -172,20 +173,25 @@ public class MainFragment extends Fragment {
                 break;
         }
 
+
         bottomNavigationView.post(() -> {
             int menuSize = bottomNavigationView.getMenu().size();
             if (menuSize == 0) return;
 
             int targetIndex = 1;
             if (targetIndex >= menuSize) targetIndex = 0;
-
-            MenuItem item = bottomNavigationView.getMenu().getItem(targetIndex);
-
+            MenuItem item = null;
+            if(role.equals(UserRole.DRIVER)){
+                item = bottomNavigationView.getMenu().getItem(0);
+            } else {
+                item = bottomNavigationView.getMenu().getItem(targetIndex);
+            }
             suppressNavSelection = true;
             bottomNavigationView.setSelectedItemId(item.getItemId());
             suppressNavSelection = false;
             handleBottomNavSelection(item, role);
         });
+
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (suppressNavSelection) {
@@ -220,10 +226,8 @@ public class MainFragment extends Fragment {
                 Toast.makeText(requireContext(), "Неподдерживаемое меню", Toast.LENGTH_SHORT).show();
             }
         } else if (role == UserRole.DRIVER) {
-            if (id == R.id.menu_driver_home_driver) {
-                replaceMainFragment(new DriverHomeFragment(), "driver_home");
-            } else if (id == R.id.menu_trip_board_driver) {
-                replaceMainFragment(new DriverHomeFragment(), "trip_board");
+            if (id == R.id.menu_trip_board_driver) {
+                replaceMainFragment(new DriverTripFragment(), "driver_home");
             } else if (id == R.id.menu_profile_driver) {
                 replaceMainFragment(new ProfileFragment(), "profile");
             } else {

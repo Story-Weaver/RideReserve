@@ -1,9 +1,13 @@
 package by.story_weaver.ridereserve.Logic.data.dao;
 
+import static android.content.ContentValues.TAG;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +34,7 @@ public class TripDao {
         db.insertWithOnConflict(DatabaseContract.Trips.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
-    public void removeTrip(int id){
+    public void removeTrip(long id){
         db.delete(DatabaseContract.Trips.TABLE_NAME, DatabaseContract.Trips.COL_ID + " = ?", new String[]{String.valueOf(id)});
     }
 
@@ -115,5 +119,50 @@ public class TripDao {
         }
         return list;
     }
+    public boolean updateTripStatus(long tripId, TripStatus status) {
+        ContentValues cv = new ContentValues();
+        cv.put(DatabaseContract.Trips.COL_STATUS, status != null ? status.name() : null);
 
+        String where = DatabaseContract.Trips.COL_ID + " = ?";
+        String[] whereArgs = new String[]{ String.valueOf(tripId) };
+
+        db.beginTransaction();
+        try {
+            int rows = db.update(DatabaseContract.Trips.TABLE_NAME, cv, where, whereArgs);
+            db.setTransactionSuccessful();
+            return rows > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "updateTripStatus error", e);
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public boolean updateTrip(Trip trip) {
+        if (trip == null) return false;
+        ContentValues cv = new ContentValues();
+        cv.put(DatabaseContract.Trips.COL_ROUTE_ID, trip.getRouteId());
+        cv.put(DatabaseContract.Trips.COL_VEHICLE_ID, trip.getVehicleId());
+        cv.put(DatabaseContract.Trips.COL_DRIVER_ID, trip.getDriverId());
+        cv.put(DatabaseContract.Trips.COL_DEPARTURE_TIME, trip.getDepartureTime());
+        cv.put(DatabaseContract.Trips.COL_ARRIVAL_TIME, trip.getArrivalTime());
+        cv.put(DatabaseContract.Trips.COL_STATUS, trip.getStatus() != null ? trip.getStatus().name() : null);
+        cv.put("price", trip.getPrice()); // как выше, скорректируй имя колонки
+
+        String where = DatabaseContract.Trips.COL_ID + " = ?";
+        String[] whereArgs = new String[]{ String.valueOf(trip.getId()) };
+
+        db.beginTransaction();
+        try {
+            int rows = db.update(DatabaseContract.Trips.TABLE_NAME, cv, where, whereArgs);
+            db.setTransactionSuccessful();
+            return rows > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "updateTrip error", e);
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
 }

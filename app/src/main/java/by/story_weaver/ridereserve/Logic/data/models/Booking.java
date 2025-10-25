@@ -19,7 +19,6 @@ public class Booking {
         this.childSeatNeeded = childSeatNeeded; this.hasPet = hasPet; this.status = status; this.price = price;
     }
 
-    // getters/setters...
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
     public long getTripId() { return tripId; }

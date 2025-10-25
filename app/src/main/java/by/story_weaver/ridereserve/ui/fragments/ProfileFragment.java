@@ -40,7 +40,7 @@ public class ProfileFragment extends Fragment {
     private TextView tvUserName, tvUserRole, tvEmail, tvPhone;
     //private View layoutSwitchRole;
     private View layoutVehicleManagement, layoutEditProfile, layoutTripHistory, layoutHelp, layoutLogout;
-    private View layoutSlicer1, layoutSlicer2;
+    private View layoutSlicer0, layoutSlicer1, layoutSlicer2;
     private ProfileViewModel profileViewModel;
     private MainViewModel mainViewModel;
     private AuthViewModel authViewModel;
@@ -74,8 +74,11 @@ public class ProfileFragment extends Fragment {
         layoutVehicleManagement = view.findViewById(R.id.layoutVehicleManagement);
         layoutEditProfile = view.findViewById(R.id.layoutEditProfile);
         layoutTripHistory = view.findViewById(R.id.layoutTripHistory);
+        layoutTripHistory.setVisibility(GONE);
         layoutHelp = view.findViewById(R.id.layoutHelp);
         layoutLogout = view.findViewById(R.id.layoutLogout);
+        layoutSlicer0 = view.findViewById(R.id.layoutSlicer0);
+        layoutSlicer0.setVisibility(GONE);
         layoutSlicer1 = view.findViewById(R.id.layoutSlicer1);
         layoutSlicer2 = view.findViewById(R.id.layoutSlicer2);
         //layoutSwitchRole = view.findViewById(R.id.layoutSwitchRole);

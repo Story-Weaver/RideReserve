@@ -38,10 +38,10 @@ public class DataSeeder {
         List<User> users = new ArrayList<>();
 
         // Водители
-        users.add(new User(4L, "ivanov@mail.com", "password123", "Иванов Иван Иванович", "+375291234567", 1, UserRole.DRIVER));
-        users.add(new User(5L, "petrov@mail.com", "password123", "Петров Петр Петрович", "+375292345678", 1, UserRole.DRIVER));
-        users.add(new User(6L, "sidorov@mail.com", "password123", "Сидоров Алексей Владимирович", "+375293456789", 1, UserRole.DRIVER));
-        users.add(new User(7L, "smirnov@mail.com", "password123", "Смирнов Дмитрий Олегович", "+375294567890", 1, UserRole.DRIVER));
+        users.add(new User(4L, "ivanov@mail.com", "password123", "Иванов Иван Иванович", "+375291234567", 0, UserRole.DRIVER));
+        users.add(new User(5L, "petrov@mail.com", "password123", "Петров Петр Петрович", "+375292345678", 0, UserRole.DRIVER));
+        users.add(new User(6L, "sidorov@mail.com", "password123", "Сидоров Алексей Владимирович", "+375293456789", 0, UserRole.DRIVER));
+        users.add(new User(7L, "smirnov@mail.com", "password123", "Смирнов Дмитрий Олегович", "+375294567890", 0, UserRole.DRIVER));
 
         // Пассажиры
         users.add(new User(8L, "passenger1@mail.com", "password123", "Анна Ковалева", "+375295678901", 0, UserRole.PASSENGER));
