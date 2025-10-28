@@ -87,9 +87,9 @@ public class ProfileFragment extends Fragment {
         if (role.equals(UserRole.DRIVER)) {
             tvUserRole.setText("Водитель");
             //layoutSwitchRole.setVisibility(VISIBLE);
-            layoutSlicer1.setVisibility(VISIBLE);
-            layoutSlicer2.setVisibility(VISIBLE);
-            layoutVehicleManagement.setVisibility(VISIBLE);
+            layoutSlicer1.setVisibility(GONE);
+            layoutSlicer2.setVisibility(GONE);
+            layoutVehicleManagement.setVisibility(GONE);
         } else {
             tvUserRole.setText("Пассажир");
             layoutSlicer1.setVisibility(GONE);

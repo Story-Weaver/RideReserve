@@ -1,81 +1,81 @@
+// AdminViewModel.java
 package by.story_weaver.ridereserve.Logic.viewModels;
+
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 
-import by.story_weaver.ridereserve.Logic.data.models.Booking;
-import by.story_weaver.ridereserve.Logic.data.models.Route;
+import javax.inject.Inject;
+
+import by.story_weaver.ridereserve.Logic.data.models.AdminStats;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
-import by.story_weaver.ridereserve.Logic.data.models.User;
-import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.BookingRepository;
-import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.RouteRepository;
-import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.TripRepository;
-import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.UserRepository;
-import by.story_weaver.ridereserve.Logic.utils.UiState;
+import by.story_weaver.ridereserve.Logic.network.impl.AdminApiService;
 import dagger.hilt.android.lifecycle.HiltViewModel;
-import jakarta.inject.Inject;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @HiltViewModel
 public class AdminViewModel extends ViewModel {
-    private final RouteRepository routeRepo;
-    private final TripRepository tripRepo;
-    private final UserRepository userRepo;
-    private final BookingRepository bookingRepo;
-    private final Executor executor;
 
-    private final MutableLiveData<UiState<List<Route>>> routesState = new MutableLiveData<>();
-    private final MutableLiveData<UiState<List<Trip>>> tripsState = new MutableLiveData<>();
-    private final MutableLiveData<UiState<List<User>>> usersState = new MutableLiveData<>();
-    private final MutableLiveData<UiState<List<Booking>>> bookingsState = new MutableLiveData<>();
+    private final AdminApiService adminApiService;
+    private final MutableLiveData<AdminStats> adminStats = new MutableLiveData<>();
+    private final MutableLiveData<List<Trip>> activeTrips = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
     @Inject
-    public AdminViewModel(RouteRepository routeRepo, TripRepository tripRepo,
-                          UserRepository userRepo, BookingRepository bookingRepo, Executor executor) {
-        this.routeRepo = routeRepo;
-        this.tripRepo = tripRepo;
-        this.userRepo = userRepo;
-        this.bookingRepo = bookingRepo;
-        this.executor = executor;
+    public AdminViewModel(AdminApiService adminApiService) {
+        this.adminApiService = adminApiService;
     }
 
-    public LiveData<UiState<List<Route>>> getRoutesState() { return routesState; }
-    public LiveData<UiState<List<Trip>>> getTripsState() { return tripsState; }
-    public LiveData<UiState<List<User>>> getUsersState() { return usersState; }
-    public LiveData<UiState<List<Booking>>> getBookingsState() { return bookingsState; }
+    public LiveData<AdminStats> getAdminStats() {
+        return adminStats;
+    }
 
-    public void loadAllData() {
-        routesState.postValue(UiState.loading());
-        tripsState.postValue(UiState.loading());
-        usersState.postValue(UiState.loading());
-        bookingsState.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                routesState.postValue(UiState.success(routeRepo.getAllRoutes()));
-                tripsState.postValue(UiState.success(tripRepo.getAll()));
-                usersState.postValue(UiState.success(userRepo.getAll()));
-                bookingsState.postValue(UiState.success(bookingRepo.getAll()));
-            } catch (Exception e) {
-                String msg = "Ошибка загрузки админ-данных: " + e.getMessage();
-                routesState.postValue(UiState.error(msg));
-                tripsState.postValue(UiState.error(msg));
-                usersState.postValue(UiState.error(msg));
-                bookingsState.postValue(UiState.error(msg));
+    public LiveData<List<Trip>> getActiveTrips() {
+        return activeTrips;
+    }
+
+    public LiveData<Boolean> getIsLoading() {
+        return isLoading;
+    }
+
+    public void loadAdminData() {
+        isLoading.setValue(true);
+        Log.v("adminViewModel", "start_loading");
+        // Загружаем статистику
+        adminApiService.getAdminStats().enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<AdminStats> call, Response<AdminStats> response) {
+                isLoading.setValue(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    adminStats.setValue(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AdminStats> call, Throwable t) {
+                isLoading.setValue(false);
+                Log.e("adminViewModel", "error: " + t.getMessage());
             }
         });
-    }
 
-    public void deleteUser(final int id) {
-        executor.execute(() -> {
-            try {
-                userRepo.removeUser(id);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        adminApiService.getActiveTrips().enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<List<Trip>> call, Response<List<Trip>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    activeTrips.setValue(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Trip>> call, Throwable t) {
+                Log.e("adminViewModel", "error: " + t.getMessage());
             }
         });
     }
 }
-

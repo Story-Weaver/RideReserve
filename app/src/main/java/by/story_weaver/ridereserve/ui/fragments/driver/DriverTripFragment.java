@@ -238,16 +238,6 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     }
 
     @Override
-    public void onTripDetailsClick(Trip trip) {
-        openTripDetails(trip);
-    }
-
-    @Override
-    public void onTripManageClick(Trip trip) {
-        manageTrip(trip);
-    }
-
-    @Override
     public void onTripClick(Trip trip) {
         openTripDetails(trip);
     }
@@ -257,9 +247,6 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
         mainViewModel.openFullscreen(fragment);
     }
 
-    private void manageTrip(Trip trip) {
-        // TODO: Реализовать управление поездкой
-    }
 
     @Override
     public void onPause() {

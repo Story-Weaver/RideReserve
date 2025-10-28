@@ -196,37 +196,6 @@
         </LinearLayout>
 
         <!-- Кнопки действий -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16px">
-
-            <!-- Кнопка деталей -->
-            <Button
-                android:id="@+id/btnDetails"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Детали"
-                android:textColor="@color/gray_600"
-                android:backgroundTint="@color/gray_400"
-                android:layout_marginEnd="4dp"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-
-            <!-- Кнопка управления -->
-            <Button
-                android:id="@+id/btnManage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Управлять"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/green"
-                android:layout_marginStart="4dp"
-                style="@style/Widget.Material3.Button" />
-
-        </LinearLayout>
 
     </LinearLayout>
 

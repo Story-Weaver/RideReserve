@@ -31,8 +31,8 @@ import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.activities.AuthActivity;
 import by.story_weaver.ridereserve.ui.fragments.admin.AdminDashboardFragment;
+import by.story_weaver.ridereserve.ui.fragments.admin.BookingMonitorFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
-import by.story_weaver.ridereserve.ui.fragments.driver.DriverHomeFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverTripFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.RouteFragment;
@@ -139,14 +139,14 @@ public class MainFragment extends Fragment {
             UserRole role = profile != null ? profile.getRole() : UserRole.PASSENGER;
             switch (role) {
                 case DRIVER:
-                    replaceMainFragment(new DriverHomeFragment(), "driver_home");
+                    replaceMainFragment(new DriverTripFragment(), "driver_trips");
                     break;
                 case ADMIN:
                     replaceMainFragment(new AdminDashboardFragment(), "admin_dashboard");
                     break;
                 case PASSENGER:
                 default:
-                    replaceMainFragment(new BookingsListFragment(), "routes");
+                    replaceMainFragment(new BookingsListFragment(), "user_bookings");
                     break;
             }
         } else {
@@ -234,13 +234,13 @@ public class MainFragment extends Fragment {
                 Log.w(TAG, "Unknown driver menu id: " + id);
                 Toast.makeText(requireContext(), "Неподдерживаемое меню", Toast.LENGTH_SHORT).show();
             }
-        } else { // ADMIN
-            if (id == R.id.menu_change_admin) {
-                replaceMainFragment(new ProfileFragment(), "change_data");
+        } else if (role == UserRole.ADMIN) {
+            if (id == R.id.menu_booking_admin) {
+                replaceMainFragment(new BookingMonitorFragment(), "change_data");
             } else if (id == R.id.menu_admin_dashboard_admin) {
                 replaceMainFragment(new AdminDashboardFragment(), "admin_dashboard");
             } else if (id == R.id.menu_edit_admin) {
-                replaceMainFragment(new RouteEditFragment(), "edit_data");
+                replaceMainFragment(new ProfileFragment(), "edit_data");
             } else {
                 Log.w(TAG, "Unknown admin menu id: " + id);
                 Toast.makeText(requireContext(), "Неподдерживаемое меню", Toast.LENGTH_SHORT).show();

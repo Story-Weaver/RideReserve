@@ -27,8 +27,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
     private OnTripClickListener listener;
 
     public interface OnTripClickListener {
-        void onTripDetailsClick(Trip trip);
-        void onTripManageClick(Trip trip);
         void onTripClick(Trip trip);
     }
 
@@ -112,7 +110,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
 
         private TextView tvTripId, tvTripStatus, tvDeparture, tvDestination;
         private TextView tvDateTime, tvPassengers, tvTotalPrice;
-        private Button btnDetails, btnManage;
 
         public TripViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -124,8 +121,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
             tvDateTime = itemView.findViewById(R.id.tvDateTime);
             tvPassengers = itemView.findViewById(R.id.tvPassengers);
             tvTotalPrice = itemView.findViewById(R.id.tvTotalPrice);
-            btnDetails = itemView.findViewById(R.id.btnDetails);
-            btnManage = itemView.findViewById(R.id.btnManage);
 
             setupClickListeners();
         }
@@ -136,24 +131,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
                         listener.onTripClick(trips.get(position));
-                    }
-                }
-            });
-
-            btnDetails.setOnClickListener(v -> {
-                if (listener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        listener.onTripDetailsClick(trips.get(position));
-                    }
-                }
-            });
-
-            btnManage.setOnClickListener(v -> {
-                if (listener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        listener.onTripManageClick(trips.get(position));
                     }
                 }
             });
@@ -188,7 +165,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
             }
 
             setupStatus(trip.getStatus());
-            setupManageButton(trip.getStatus());
         }
 
         private String formatDateTime(String dateTime) {
@@ -236,16 +212,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
                 default:
                     tvTripStatus.setText("Неизвестно");
                     tvTripStatus.setBackgroundResource(R.drawable.bg_status_scheduled);
-            }
-        }
-
-        private void setupManageButton(TripStatus status) {
-            if (status == TripStatus.SCHEDULED || status == TripStatus.IN_PROGRESS) {
-                btnManage.setText("Управлять");
-                btnManage.setEnabled(true);
-            } else {
-                btnManage.setText("Недоступно");
-                btnManage.setEnabled(false);
             }
         }
     }

@@ -16,14 +16,28 @@ import by.story_weaver.ridereserve.R;
 public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHolder> {
     private List<Trip> trips;
     private final OnTripClickListener listener;
+    private boolean showAdminInfo = false;
 
     public TripsAdapter(List<Trip> trips, OnTripClickListener listener) {
         this.trips = trips;
         this.listener = listener;
     }
 
+    // Новый конструктор для админ-режима
+    public TripsAdapter(List<Trip> trips, OnTripClickListener listener, boolean showAdminInfo) {
+        this.trips = trips;
+        this.listener = listener;
+        this.showAdminInfo = showAdminInfo;
+    }
+
     public void updateTrips(List<Trip> newTrips) {
         this.trips = newTrips;
+        notifyDataSetChanged();
+    }
+
+    // Метод для переключения режима админа
+    public void setShowAdminInfo(boolean showAdminInfo) {
+        this.showAdminInfo = showAdminInfo;
         notifyDataSetChanged();
     }
 
@@ -46,13 +60,16 @@ public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHold
     }
 
     class TripViewHolder extends RecyclerView.ViewHolder {
-        private final TextView tvDepartureTime, tvArrivalTime, tvPrice;
+        private final TextView tvDepartureTime, tvArrivalTime, tvPrice, tvStatus;
+        private final View layoutStatus;
 
         public TripViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDepartureTime = itemView.findViewById(R.id.tvDepartureTime);
             tvArrivalTime = itemView.findViewById(R.id.tvArrivalTime);
             tvPrice = itemView.findViewById(R.id.tvPrice);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            layoutStatus = itemView.findViewById(R.id.layoutStatus);
 
             itemView.setOnClickListener(v -> {
                 if (getAdapterPosition() != RecyclerView.NO_POSITION) {
@@ -65,6 +82,38 @@ public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHold
             tvDepartureTime.setText(trip.getDepartureTime());
             tvArrivalTime.setText(trip.getArrivalTime());
             tvPrice.setText(String.format("%.2f ₽", trip.getPrice()));
+
+            // Отображаем статус только в админ-режиме
+            if (showAdminInfo) {
+                layoutStatus.setVisibility(View.VISIBLE);
+                setStatusTextAndColor(trip.getStatus());
+            } else {
+                layoutStatus.setVisibility(View.GONE);
+            }
+        }
+
+        private void setStatusTextAndColor(by.story_weaver.ridereserve.Logic.data.enums.TripStatus status) {
+            switch (status) {
+                case SCHEDULED:
+                    tvStatus.setText("Запланирован");
+                    tvStatus.setTextColor(itemView.getContext().getColor(R.color.orange));
+                    break;
+                case IN_PROGRESS:
+                    tvStatus.setText("В процессе");
+                    tvStatus.setTextColor(itemView.getContext().getColor(R.color.green));
+                    break;
+                case COMPLETED:
+                    tvStatus.setText("Завершён");
+                    tvStatus.setTextColor(itemView.getContext().getColor(R.color.gray_600));
+                    break;
+                case CANCELLED:
+                    tvStatus.setText("Отменён");
+                    tvStatus.setTextColor(itemView.getContext().getColor(R.color.red));
+                    break;
+                default:
+                    tvStatus.setText(status.toString());
+                    tvStatus.setTextColor(itemView.getContext().getColor(R.color.gray_600));
+            }
         }
     }
 

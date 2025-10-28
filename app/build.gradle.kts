@@ -40,6 +40,12 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.fragment)
     implementation(libs.cardview)
+    implementation(libs.retrofit)
+    implementation(libs.converter)
+    implementation(libs.okhttp)
+    implementation(libs.gson)
+
+
     implementation(libs.recyclerview)
     testImplementation(libs.junit)
     implementation(libs.hilt.android)
