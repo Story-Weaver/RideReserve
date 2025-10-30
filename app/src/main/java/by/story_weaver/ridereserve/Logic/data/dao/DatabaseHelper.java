@@ -22,7 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // users
         db.execSQL("CREATE TABLE " + DatabaseContract.Users.TABLE_NAME + " (" +
-                DatabaseContract.Users.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                DatabaseContract.Users.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Users.COL_EMAIL + " TEXT UNIQUE NOT NULL, " +
                 DatabaseContract.Users.COL_PASSWORD + " TEXT NOT NULL, " +
                 DatabaseContract.Users.COL_FULL_NAME + " TEXT, " +
@@ -33,7 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // routes
         db.execSQL("CREATE TABLE " + DatabaseContract.Routes.TABLE_NAME + " (" +
-                DatabaseContract.Routes.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                DatabaseContract.Routes.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Routes.COL_NAME + " TEXT, " +
                 DatabaseContract.Routes.COL_ORIGIN + " TEXT, " +
                 DatabaseContract.Routes.COL_DESTINATION + " TEXT, " +
@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // vehicles
         db.execSQL("CREATE TABLE " + DatabaseContract.Vehicles.TABLE_NAME + " (" +
-                DatabaseContract.Vehicles.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                DatabaseContract.Vehicles.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Vehicles.COL_PLATE_NUMBER + " TEXT UNIQUE, " +
                 DatabaseContract.Vehicles.COL_MODEL + " TEXT, " +
                 DatabaseContract.Vehicles.COL_SEATS_COUNT + " INTEGER" +
@@ -52,7 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // seats
         db.execSQL("CREATE TABLE " + DatabaseContract.Seats.TABLE_NAME + " (" +
-                DatabaseContract.Seats.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                DatabaseContract.Seats.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Seats.COL_VEHICLE_ID + " INTEGER NOT NULL, " +
                 DatabaseContract.Seats.COL_SEAT_NUMBER + " INTEGER NOT NULL, " +
                 DatabaseContract.Seats.COL_TAG + " TEXT, " +
@@ -63,7 +63,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // trips
         db.execSQL("CREATE TABLE " + DatabaseContract.Trips.TABLE_NAME + " (" +
-                DatabaseContract.Trips.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                DatabaseContract.Trips.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Trips.COL_ROUTE_ID + " INTEGER NOT NULL, " +
                 DatabaseContract.Trips.COL_VEHICLE_ID + " INTEGER, " +
                 DatabaseContract.Trips.COL_DRIVER_ID + " INTEGER, " +
@@ -81,7 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // bookings
         db.execSQL("CREATE TABLE " + DatabaseContract.Bookings.TABLE_NAME + " (" +
-                DatabaseContract.Bookings.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                DatabaseContract.Bookings.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Bookings.COL_TRIP_ID + " INTEGER NOT NULL, " +
                 DatabaseContract.Bookings.COL_PASSENGER_ID + " INTEGER NOT NULL, " +
                 DatabaseContract.Bookings.COL_SEAT_NUMBER + " INTEGER, " +

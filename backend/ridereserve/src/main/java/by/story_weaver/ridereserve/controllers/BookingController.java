@@ -49,10 +49,10 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
     
-    @GetMapping("/exists")
+    @GetMapping("/exists/{passengerId}/{tripId}")
     public ResponseEntity<Boolean> checkBookingExists(
-            @RequestParam Long passengerId, 
-            @RequestParam Long tripId) {
+            @PathVariable Long passengerId, 
+            @PathVariable Long tripId) {
         boolean exists = bookingService.checkBookingExists(passengerId, tripId);
         return ResponseEntity.ok(exists);
     }
@@ -63,7 +63,7 @@ public class BookingController {
         return ResponseEntity.ok(createdBooking);
     }
     
-    @PutMapping("/")
+    @PutMapping()
     public ResponseEntity<Booking> updateBooking(@RequestBody Booking booking) {
         Booking updatedBooking = bookingService.updateBooking(booking);
         return updatedBooking != null ? ResponseEntity.ok(updatedBooking) : ResponseEntity.notFound().build();

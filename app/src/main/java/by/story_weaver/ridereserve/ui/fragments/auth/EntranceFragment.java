@@ -61,7 +61,7 @@ public class EntranceFragment extends Fragment {
         enter = view.findViewById(R.id.enterButtonEnter);
     }
     private void observeLogin(){
-        viewModel.getCurrentUserStateEnter().observe(getViewLifecycleOwner(), state -> {
+        viewModel.getUserStateEnter().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
                 case ERROR:

@@ -41,7 +41,7 @@ public class AdminController {
         return ResponseEntity.ok(stats);
     }
     
-    @GetMapping("/active-trips")
+    @GetMapping("/activetrips")
     public ResponseEntity<List<Trip>> getActiveTrips() {
         List<Trip> trips = adminService.getActiveTrips();
         return ResponseEntity.ok(trips);

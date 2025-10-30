@@ -7,27 +7,32 @@ import androidx.lifecycle.ViewModel;
 import java.util.concurrent.Executor;
 
 import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
+import by.story_weaver.ridereserve.Logic.data.models.EnterRequest;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.data.repositories.interfaces.UserRepository;
+import by.story_weaver.ridereserve.Logic.network.AuthApiService;
 import by.story_weaver.ridereserve.Logic.utils.UiState;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import jakarta.inject.Inject;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 @HiltViewModel
 public class AuthViewModel extends ViewModel {
     private final UserRepository userRepo;
-    private final Executor executor;
-    private final MutableLiveData<UiState<User>> currentUserStateReg = new MutableLiveData<>();
-    private final MutableLiveData<UiState<User>> currentUserStateEnter = new MutableLiveData<>();
+    private final AuthApiService authApiService;
+    private final MutableLiveData<UiState<User>> UserStateReg = new MutableLiveData<>();
+    private final MutableLiveData<UiState<User>> UserStateEnter = new MutableLiveData<>();
 
     @Inject
-    public AuthViewModel(UserRepository userRepo, Executor executor) {
+    public AuthViewModel(UserRepository userRepo, AuthApiService authApiService) {
         this.userRepo = userRepo;
-        this.executor = executor;
+        this.authApiService = authApiService;
     }
 
-    public LiveData<UiState<User>> getCurrentUserStateEnter() { return currentUserStateEnter; }
-    public LiveData<UiState<User>> getCurrentUserStateReg() { return currentUserStateReg; }
+    public LiveData<UiState<User>> getUserStateEnter() { return UserStateEnter; }
+    public LiveData<UiState<User>> getUserStateReg() { return UserStateReg; }
 
     public int checkSignedIn() {
         int id = userRepo.getUserInSystem();
@@ -46,15 +51,18 @@ public class AuthViewModel extends ViewModel {
     }
 
     public void login(final String email, final String password) {
-        currentUserStateEnter.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                User user = userRepo.getUserByEmail(email);
-                if (user.getPassword().equals(password) && !user.getRole().equals(UserRole.GUEST)){
-                    currentUserStateEnter.postValue(UiState.success(user));
-                } else currentUserStateEnter.postValue(UiState.error("Некорректные авторизационные данные"));
-            } catch (Exception e) {
-                currentUserStateEnter.postValue(UiState.error(e.getMessage()));
+        UserStateEnter.postValue(UiState.loading());
+        authApiService.login(new EnterRequest(email, password)).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                userRepo.addUser(response.body());
+                userRepo.setUserInSystem(response.body().getId());
+                UserStateEnter.postValue(UiState.success(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                UserStateEnter.postValue(UiState.error(t.getMessage()));
             }
         });
     }
@@ -64,14 +72,18 @@ public class AuthViewModel extends ViewModel {
     }
 
     public void register(User user) {
-        currentUserStateReg.postValue(UiState.loading());
-        executor.execute(() -> {
-            try {
-                User u = new User(1, user.getEmail(), user.getPassword(), user.getFullName(), user.getPhone(),1, UserRole.PASSENGER);
-                userRepo.addUser(u);
-                currentUserStateReg.postValue(UiState.success(user));
-            } catch (Exception e) {
-                currentUserStateReg.postValue(UiState.error(e.getMessage()));
+        UserStateReg.postValue(UiState.loading());
+        authApiService.register(user).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                userRepo.addUser(response.body());
+                userRepo.setUserInSystem(response.body().getId());
+                UserStateReg.postValue(UiState.success(response.body()));
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                UserStateReg.postValue(UiState.error(t.getMessage()));
             }
         });
     }
