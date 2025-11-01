@@ -34,8 +34,8 @@ public class AuthViewModel extends ViewModel {
     public LiveData<UiState<User>> getUserStateEnter() { return UserStateEnter; }
     public LiveData<UiState<User>> getUserStateReg() { return UserStateReg; }
 
-    public int checkSignedIn() {
-        int id = userRepo.getUserInSystem();
+    public long checkSignedIn() {
+        long id = userRepo.getUserInSystem();
         if (id > 0) {
             return id;
         } else {

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -87,7 +88,6 @@ public class BookingActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // NOTE: reuse fragment layout for quick migration. Replace with activity_booking if you create it.
         EdgeToEdge.enable(this);
         setContentView(R.layout.fragment_booking);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scroll_booking), (v, insets) -> {
@@ -195,6 +195,45 @@ public class BookingActivity extends AppCompatActivity {
             return false;
         });
 
+        // Добавьте этот обработчик для чекбокса
+        CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
+        cbUseMyData.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && currentUser != null) {
+                etFullName.setText(currentUser.getFullName());
+                etPhone.setText(currentUser.getPhone());
+                etEmail.setText(currentUser.getEmail());
+
+                etFullName.setEnabled(false);
+                etPhone.setEnabled(false);
+                etEmail.setEnabled(false);
+
+                tilFullName.setError(null);
+                tilPhone.setError(null);
+                tilEmail.setError(null);
+            } else {
+                etFullName.setEnabled(true);
+                etPhone.setEnabled(true);
+                etEmail.setEnabled(true);
+
+                etFullName.setText("");
+                etPhone.setText("");
+                etEmail.setText("");
+            }
+        });
+
+        CheckBox cbChildSeat = findViewById(R.id.cbChildSeat);
+        CheckBox cbPet = findViewById(R.id.cbPet);
+
+        cbChildSeat.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isChild = isChecked;
+            updateTotalPrice();
+        });
+
+        cbPet.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isPet = isChecked;
+            updateTotalPrice();
+        });
+
         book.setOnClickListener(v -> createNewBooking());
     }
 
@@ -208,7 +247,6 @@ public class BookingActivity extends AppCompatActivity {
             }
         });
 
-        // routes list
         bookingViewModel.getAllRoutes().observe(this, list -> {
             if (list.status == UiState.Status.SUCCESS && list.data != null) {
                 routesAdapter.updateRoutes(list.data);
@@ -327,6 +365,13 @@ public class BookingActivity extends AppCompatActivity {
 
     private void loadCurrentUser() {
         currentUser = profileViewModel.getProfile();
+
+        CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
+        if (currentUser != null && cbUseMyData.isChecked()) {
+            etFullName.setText(currentUser.getFullName());
+            etPhone.setText(currentUser.getPhone());
+            etEmail.setText(currentUser.getEmail());
+        }
     }
 
     private void searchRoutes() {
@@ -415,6 +460,17 @@ public class BookingActivity extends AppCompatActivity {
 
     private boolean isFormValid() {
         boolean isValid = true;
+
+        CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
+
+        if (cbUseMyData.isChecked()) {
+            if (currentUser == null) {
+                Toast.makeText(this, "Пользователь не найден", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return true;
+        }
+
         if (etFullName == null || Objects.requireNonNull(etFullName.getText()).toString().trim().isEmpty()) {
             if (tilFullName != null) tilFullName.setError("Введите ФИО");
             isValid = false;

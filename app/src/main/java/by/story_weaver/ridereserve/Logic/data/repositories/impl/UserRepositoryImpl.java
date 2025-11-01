@@ -61,7 +61,7 @@ public class UserRepositoryImpl implements UserRepository {
         dao.setUserInSystem(id);
     }
     @Override
-    public int getUserInSystem(){
+    public long getUserInSystem(){
         return dao.getIdUserInSystem();
     }
 }

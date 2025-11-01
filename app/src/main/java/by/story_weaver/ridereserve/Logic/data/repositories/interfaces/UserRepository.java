@@ -14,6 +14,6 @@ public interface UserRepository {
     void updateUser(User user);
     void exit();
     void editUser(User user);
-    int getUserInSystem();
+    long getUserInSystem();
     void setUserInSystem(long id);
 }

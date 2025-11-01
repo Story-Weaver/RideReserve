@@ -37,6 +37,19 @@ public class ProfileViewModel extends ViewModel {
     public LiveData<UiState<User>> getProfileState() { return profileState; }
 
     public User getProfile() {
+        userApiService.getUserById(userRepo.getUserInSystem()).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                User user = response.body();
+                user.setInSystem(1);
+                userRepo.editUser(user);
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+
+            }
+        });
         return userRepo.getUser(userRepo.getUserInSystem());
     }
 
@@ -64,41 +77,12 @@ public class ProfileViewModel extends ViewModel {
             return;
         }
         user.setInSystem(0);
-        // --- ЛОГИ ОТПРАВЛЯЕМОГО ПОЛЬЗОВАТЕЛЯ ---
-        try {
-            Log.d("UserDebug", "=== Sending updateUserProfile request ===");
-            Log.d("UserDebug", "METHOD: PUT");
-            Log.d("UserDebug", "URL   : http://192.168.0.85:8080/api/users/" + user.getId() + "/profile");
-            Log.d("UserDebug", "BODY  : " + new com.google.gson.GsonBuilder()
-                    .setPrettyPrinting()
-                    .create()
-                    .toJson(user));
-        } catch (Exception e) {
-            Log.e("UserDebug", "Error serializing user for log", e);
-        }
 
         profileState.postValue(UiState.loading());
 
-        Call<User> call = userApiService.updateUserProfile(user.getId(), user);
-
-        // --- ЛОГИ ЗАГОЛОВКОВ (если есть кастомные) ---
-        try {
-            Log.d("UserDebug", "HEADERS:");
-            for (String name : call.request().headers().names()) {
-                Log.d("UserDebug", "  " + name + ": " + call.request().header(name));
-            }
-        } catch (Exception ignored) {}
-
-        call.enqueue(new retrofit2.Callback<>() {
+        userApiService.updateUserProfile(user.getId(), user).enqueue(new retrofit2.Callback<>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
-                Log.d("UserDebug", "=== updateUserProfile RESPONSE ===");
-                Log.d("UserDebug", "Response code: " + response.code());
-
-                // Заголовки ответа
-                for (String name : response.headers().names()) {
-                    Log.d("UserDebug", "  " + name + ": " + response.headers().get(name));
-                }
 
                 try {
                     String errorBody = response.errorBody() != null
@@ -126,7 +110,7 @@ public class ProfileViewModel extends ViewModel {
                         }
                     });
 
-                    int currentInSystemId = userRepo.getUserInSystem();
+                    long currentInSystemId = userRepo.getUserInSystem();
                     if (currentInSystemId == updated.getId()) {
                         userRepo.setUserInSystem(updated.getId());
                     }
@@ -139,17 +123,12 @@ public class ProfileViewModel extends ViewModel {
                             err += " - " + response.errorBody().string();
                         }
                     } catch (IOException ignored) {}
-                    Log.e("UserDebug", "Request URL: " + call.request().url());
-                    Log.e("UserDebug", "updateUserProfile failed: " + err);
                     profileState.postValue(UiState.error(err));
                 }
             }
 
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-                Log.e("UserDebug", "=== updateUserProfile FAILURE ===");
-                Log.e("UserDebug", "URL: " + call.request().url());
-                Log.e("UserDebug", "Error: " + (t != null ? t.getMessage() : "unknown"));
                 profileState.postValue(UiState.error("Сетевая ошибка: " + (t != null ? t.getMessage() : "unknown")));
             }
         });
