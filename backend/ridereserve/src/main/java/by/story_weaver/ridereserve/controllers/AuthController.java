@@ -1,6 +1,7 @@
 package by.story_weaver.ridereserve.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,14 +18,25 @@ public class AuthController {
     private AuthService authService;
     
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody EnterRequest request) {
+public ResponseEntity<User> login(@RequestBody EnterRequest request) {
+    try {
+        if (request == null) return ResponseEntity.badRequest().build();
         User response = authService.login(request);
-        return ResponseEntity.ok(response);
+        return response != null ? ResponseEntity.ok(response) : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
-    
-    @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User request) {
+}
+
+@PostMapping("/register")
+public ResponseEntity<User> register(@RequestBody User request) {
+    try {
+        if (request == null) return ResponseEntity.badRequest().build();
         User response = authService.register(request);
-        return ResponseEntity.ok(response);
+        return response != null ? ResponseEntity.status(HttpStatus.CREATED).body(response) : ResponseEntity.badRequest().build();
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+}
+
 }

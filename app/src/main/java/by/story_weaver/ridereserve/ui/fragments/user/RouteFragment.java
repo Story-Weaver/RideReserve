@@ -1,5 +1,6 @@
 package by.story_weaver.ridereserve.ui.fragments.user;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -7,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,9 +23,11 @@ import java.util.List;
 
 import by.story_weaver.ridereserve.Logic.adapters.Routes2Adapter;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
+import by.story_weaver.ridereserve.Logic.utils.UiState;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.R;
+import by.story_weaver.ridereserve.ui.activities.BookingActivity;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -52,8 +54,10 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         initViews(view);
         setupRecyclerView();
-        loadRoutes();
+        setupObservers();
         setupSearchFilter();
+
+        loadRoutes();
     }
 
     private void initViews(View view) {
@@ -67,10 +71,18 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
         recyclerView.setAdapter(adapter);
     }
 
+    private void setupObservers() {
+        bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), routesState -> {
+            if (routesState.status == UiState.Status.SUCCESS && routesState.data != null) {
+                originalRoutes = routesState.data;
+                filteredRoutes = new ArrayList<>(originalRoutes);
+                adapter.updateRoutes(filteredRoutes);
+            }
+        });
+    }
+
     private void loadRoutes() {
-        originalRoutes = bookingViewModel.getRoutelist();
-        filteredRoutes = new ArrayList<>(originalRoutes);
-        adapter.updateRoutes(filteredRoutes);
+        bookingViewModel.loadAllRoutes();
     }
 
     private void setupSearchFilter() {
@@ -124,8 +136,8 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
     }
 
     private void openBookingScreen(Route route) {
-        BookingFragment book = BookingFragment.newInstance(route.getId());
-        mainViewModel.openFullscreen(book);
+        Intent intent = BookingActivity.newIntentForRoute(requireActivity(), route.getId());
+        startActivity(intent);
         Log.v("Route", "open");
     }
 }

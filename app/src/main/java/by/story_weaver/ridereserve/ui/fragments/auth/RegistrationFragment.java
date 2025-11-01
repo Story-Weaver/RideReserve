@@ -68,7 +68,7 @@ public class RegistrationFragment extends Fragment {
     }
 
     private void observeReg(){
-        viewModel.getCurrentUserStateReg().observe(getViewLifecycleOwner(), state -> {
+        viewModel.getUserStateReg().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
                 case ERROR:

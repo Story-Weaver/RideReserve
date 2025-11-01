@@ -23,6 +23,8 @@ public interface RouteApiService {
     Call<List<Route>> searchRoutesByPoints(@Query("from") String from, @Query("to") String to);
     @GET("routes/get/points")
     Call<List<String>> getRoutePoints(@Query("from") String from, @Query("to") String to);
+    @GET("routes/cities")
+    Call<List<String>> getCities();
     @POST("routes")
     Call<Route> createRoute(@Body Route route);
     @PUT("routes")

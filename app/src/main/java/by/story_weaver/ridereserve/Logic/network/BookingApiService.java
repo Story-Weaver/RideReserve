@@ -27,13 +27,13 @@ public interface BookingApiService {
     Call<Void> deleteBooking(@Path("id") long id);
 
     @GET("bookings/user/{userId}")
-    Call<List<User>> getBookingsByUser(@Path("userId") long id);
+    Call<List<Booking>> getBookingsByUser(@Path("userId") long id);
     @GET("bookings/trip/{tripId}")
-    Call<List<User>> getBookingsByTrip(@Path("tripId") long id);
+    Call<List<Booking>> getBookingsByTrip(@Path("tripId") long id);
     @GET("bookings/status/status")
-    Call<List<User>> getBookingsByStatus(@Query("status") BookingStatus status);
+    Call<List<Booking>> getBookingsByStatus(@Query("status") BookingStatus status);
     @GET("bookings/exists/{passengerId}/{tripId}")
     Call<Boolean> checkBookingExists(@Path("passengerId") long passengerId, @Path("tripId") long tripId);
-    @PUT("bookings/{id}/{status}")
-    Call<Booking> updateBookingStatus(@Path("id") long id, @Path("status") BookingStatus status);
+    @PUT("bookings/{id}/status")
+    Call<Booking> updateBookingStatus(@Path("id") long id, @Query("status") String status);
 }

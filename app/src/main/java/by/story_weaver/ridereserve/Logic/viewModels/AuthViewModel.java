@@ -56,7 +56,7 @@ public class AuthViewModel extends ViewModel {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
                 userRepo.addUser(response.body());
-                userRepo.setUserInSystem(response.body().getId());
+                userRepo.setUserInSystem(response.body().getId());//todo by email
                 UserStateEnter.postValue(UiState.success(response.body()));
             }
 

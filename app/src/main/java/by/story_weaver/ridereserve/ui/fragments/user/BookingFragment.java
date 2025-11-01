@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.user;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
@@ -42,11 +45,11 @@ import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
+import by.story_weaver.ridereserve.Logic.utils.UiState;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
-import by.story_weaver.ridereserve.ui.fragments.UserEditFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -81,12 +84,14 @@ public class BookingFragment extends Fragment {
     private Handler refreshHandler = new Handler(Looper.getMainLooper());
     private Runnable refreshRunnable;
 
+    // Guard to avoid double-registering observers across view re-creations
+    private boolean observersInitialized = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            spRoute = getArguments().getLong(ARG_ROUTE);
+            spRoute = getArguments().getLong(ARG_ROUTE, -1);
         }
     }
 
@@ -96,9 +101,99 @@ public class BookingFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
+        initViews(view);
+        setupAdapters();
+        setupButtonListeners();
+
+        // Register observers once per view lifecycle
+        if (!observersInitialized) {
+            setupObservers();
+            observersInitialized = true;
+        }
+
+        loadCurrentUser();
+        loadInitialData();
+
+        spRoute();
+        resetToInitialState();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        resetToInitialState();
+        // don't reset state here to avoid wiping user input when returning from other screens
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // cancel pending callbacks
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+            refreshRunnable = null;
+        }
+
+        if (recyclerRoutes != null) recyclerRoutes.setAdapter(null);
+        if (recyclerTrips != null) recyclerTrips.setAdapter(null);
+
+        if (routesAdapter != null) {
+            routesAdapter.updateRoutes(new ArrayList<>());
+            routesAdapter = null;
+        }
+        if (tripsAdapter != null) {
+            tripsAdapter.updateTrips(new ArrayList<>());
+            tripsAdapter = null;
+        }
+
+        // clear view refs to help GC
+        cbUseMyData = null;
+        cbChildSeat = null;
+        cbPet = null;
+        etFullName = null;
+        etPhone = null;
+        etEmail = null;
+        tilFullName = null;
+        tilPhone = null;
+        tilEmail = null;
+        book = null;
+        etRouteSearch = null;
+        spinnerFrom = null;
+        spinnerTo = null;
+        btnSearchRoutes = null;
+        btnBackToRoutes = null;
+        btnBackToTrips = null;
+        recyclerRoutes = null;
+        recyclerTrips = null;
+        progressTrips = null;
+        cardRoutesList = null;
+        cardTimeSelection = null;
+        cardTripInfo = null;
+        cardServices = null;
+        cardPassenger = null;
+        cardTotal = null;
+        tvSelectedRoute = null;
+        tvRouteInfo = null;
+        tvDepartureTime = null;
+        tvTripPrice = null;
+        tvTotalPrice = null;
+
+        // allow observers to be re-registered next time view is created
+        observersInitialized = false;
     }
 
     public static BookingFragment newInstance(long spRoute) {
@@ -109,33 +204,18 @@ public class BookingFragment extends Fragment {
         return fragment;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        bookingViewModel = new ViewModelProvider(requireActivity()).get(BookingViewModel.class);
-        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
-        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-        initViews(view);
-        setupAdapters();
-        setupButtonListeners();
-        setupObservers();
-        loadCurrentUser();
-        loadInitialData();
-
-        spRoute();
-        resetToInitialState();
-    }
-    private void spRoute(){
-        if(spRoute != -1){
-            if(allRoutes != null){
-                for (Route i: allRoutes) {
-                    if(i.getId() == spRoute){
+    private void spRoute() {
+        if (spRoute != -1) {
+            if (allRoutes != null && !allRoutes.isEmpty()) {
+                for (Route i : allRoutes) {
+                    if (i != null && i.getId() == spRoute) {
                         onRouteSelected(i);
+                        return;
                     }
                 }
-            } else {
-                refreshRoute();
             }
+            // if routes not loaded yet - retry shortly
+            refreshRoute();
         }
     }
 
@@ -144,8 +224,9 @@ public class BookingFragment extends Fragment {
             refreshHandler.removeCallbacks(refreshRunnable);
         }
         refreshRunnable = this::spRoute;
-        refreshHandler.postDelayed(refreshRunnable, 500);
+        refreshHandler.postDelayed(refreshRunnable, 300);
     }
+
     private void initViews(View view) {
         cbUseMyData = view.findViewById(R.id.cbUseMyData);
         cbChildSeat = view.findViewById(R.id.cbChildSeat);
@@ -188,13 +269,16 @@ public class BookingFragment extends Fragment {
         recyclerTrips.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerTrips.setAdapter(tripsAdapter);
 
+        // initial spinner placeholders — will be replaced when cities arrive
+        List<String> placeholder = new ArrayList<>();
+        placeholder.add("Выберите город");
         ArrayAdapter<String> fromAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_item, getCities());
+                android.R.layout.simple_spinner_item, placeholder);
         fromAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerFrom.setAdapter(fromAdapter);
 
         ArrayAdapter<String> toAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_item, getCities());
+                android.R.layout.simple_spinner_item, placeholder);
         toAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTo.setAdapter(toAdapter);
     }
@@ -202,7 +286,6 @@ public class BookingFragment extends Fragment {
     private void setupButtonListeners() {
         btnSearchRoutes.setOnClickListener(v -> searchRoutes());
 
-        // Кнопки возврата
         btnBackToRoutes.setOnClickListener(v -> returnToRouteSelection());
         btnBackToTrips.setOnClickListener(v -> returnToTripSelection());
 
@@ -213,6 +296,7 @@ public class BookingFragment extends Fragment {
             }
             return false;
         });
+
         cbUseMyData.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 fillUserData();
@@ -222,6 +306,7 @@ public class BookingFragment extends Fragment {
                 clearFields();
             }
         });
+
         cbPet.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isPet = isChecked;
             updateTotalPrice();
@@ -235,192 +320,278 @@ public class BookingFragment extends Fragment {
         book.setOnClickListener(v -> createNewBooking());
     }
 
+    private void setupObservers() {
+        // Observers tied to view lifecycle so they are removed when view destroyed
+        mainViewModel.closeRequest().observe(getViewLifecycleOwner(), request -> {
+            resetToInitialState();
+        });
+
+        bookingViewModel.getBookingCreated().observe(getViewLifecycleOwner(), flag -> {
+            switch (flag.status) {
+                case LOADING:
+                    break;
+                case SUCCESS:
+                    Toast.makeText(requireContext(), "Бронь создана!", Toast.LENGTH_SHORT).show();
+                    mainViewModel.closeFullscreen();
+                    resetToInitialState();
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(), "Ошибка при создании брони: " + flag.message, Toast.LENGTH_LONG).show();
+                    break;
+            }
+        });
+
+        bookingViewModel.getFilteredRoutes().observe(getViewLifecycleOwner(), routes -> {
+            switch (routes.status) {
+                case LOADING:
+                    progressTrips.setVisibility(VISIBLE);
+                    recyclerTrips.setVisibility(GONE);
+                    break;
+                case SUCCESS:
+                    progressTrips.setVisibility(GONE);
+                    recyclerTrips.setVisibility(VISIBLE);
+                    if (routes.data != null && !routes.data.isEmpty()) {
+                        routesAdapter.updateRoutes(routes.data);
+                        allRoutes = routes.data;
+                        cardRoutesList.setVisibility(VISIBLE);
+                    } else {
+                        cardRoutesList.setVisibility(GONE);
+                        Toast.makeText(requireContext(), "Маршруты не найдены", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(), routes.message, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        });
+
+        bookingViewModel.getTripsForRoute().observe(getViewLifecycleOwner(), tripsState -> {
+            if (progressTrips != null) progressTrips.setVisibility(GONE);
+
+            switch (tripsState.status) {
+                case SUCCESS:
+                    if (tripsState.data != null && !tripsState.data.isEmpty()) {
+                        tripsAdapter.updateTrips(tripsState.data);
+                        cardTimeSelection.setVisibility(VISIBLE);
+
+                        if (currentRoute != null) {
+                            String origin = currentRoute.getOrigin() != null ? currentRoute.getOrigin() : "";
+                            String destination = currentRoute.getDestination() != null ? currentRoute.getDestination() : "";
+                            tvSelectedRoute.setText("Маршрут: " + origin + " - " + destination);
+                        }
+
+                        hideRemainingCards();
+                    } else {
+                        handleNoTripsFound();
+                    }
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(), "Ошибка загрузки рейсов: " + tripsState.message, Toast.LENGTH_SHORT).show();
+                    handleNoTripsFound();
+                    break;
+                case LOADING:
+                    break;
+            }
+        });
+
+        bookingViewModel.getIsHasBooking().observe(getViewLifecycleOwner(), hasBookingState -> {
+            if (hasBookingState.status == UiState.Status.SUCCESS && hasBookingState.data != null) {
+                if (hasBookingState.data) {
+                    Toast.makeText(requireContext(), "Вы уже забронировали этот рейс", Toast.LENGTH_LONG).show();
+                } else {
+                    proceedWithBooking();
+                }
+            } else if (hasBookingState.status == UiState.Status.ERROR) {
+                Toast.makeText(requireContext(), "Ошибка проверки брони: " + hasBookingState.message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Observe all cities (from API) and populate spinners
+        bookingViewModel.getAllCitiesLive().observe(getViewLifecycleOwner(), state -> {
+            switch (state.status) {
+                case LOADING:
+                    // optionally show small progress
+                    break;
+                case SUCCESS:
+                    List<String> cities = state.data != null ? state.data : new ArrayList<>();
+                    List<String> spinnerItems = new ArrayList<>();
+                    spinnerItems.add("Выберите город");
+                    spinnerItems.addAll(cities);
+
+                    ArrayAdapter<String> fromAdapter = new ArrayAdapter<>(requireContext(),
+                            android.R.layout.simple_spinner_item, spinnerItems);
+                    fromAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    if (spinnerFrom != null) spinnerFrom.setAdapter(fromAdapter);
+
+                    ArrayAdapter<String> toAdapter = new ArrayAdapter<>(requireContext(),
+                            android.R.layout.simple_spinner_item, spinnerItems);
+                    toAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    if (spinnerTo != null) spinnerTo.setAdapter(toAdapter);
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(), "Ошибка загрузки городов: " + state.message, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        });
+
+        // cache all routes when available
+        bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), list -> {
+            if (list.status == UiState.Status.SUCCESS && list.data != null) {
+                allRoutes = list.data;
+            }
+        });
+    }
+
     private void loadCurrentUser() {
         currentUser = profileViewModel.getProfile();
     }
 
-    private void setupObservers() {
-        bookingViewModel.getRoutes().observe(getViewLifecycleOwner(), routes -> {
-            if (routes != null && !routes.isEmpty()) {
-                routesAdapter.updateRoutes(routes);
-                allRoutes = routes;
-                cardRoutesList.setVisibility(View.VISIBLE);
-            } else {
-                cardRoutesList.setVisibility(View.GONE);
-                Toast.makeText(requireContext(), "Маршруты не найдены", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Наблюдаем за списком рейсов
-        bookingViewModel.getTrips().observe(getViewLifecycleOwner(), trips -> {
-            progressTrips.setVisibility(View.GONE);
-
-            if (trips != null && !trips.isEmpty()) {
-                tripsAdapter.updateTrips(trips);
-                cardTimeSelection.setVisibility(View.VISIBLE);
-
-                // БЕЗОПАСНОЕ обновление - проверяем что currentRoute не null
-                if (currentRoute != null) {
-                    String origin = currentRoute.getOrigin() != null ? currentRoute.getOrigin() : "";
-                    String destination = currentRoute.getDestination() != null ? currentRoute.getDestination() : "";
-                    tvSelectedRoute.setText("Маршрут: " + origin + " - " + destination);
-                }
-
-                // Скрываем остальные карточки пока не выбран конкретный рейс
-                hideRemainingCards();
-            } else {
-                // Если рейсов нет - возвращаемся к выбору маршрута
-                handleNoTripsFound();
-            }
-        });
-
-        // Наблюдаем за состоянием загрузки
-        bookingViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading != null && isLoading) {
-                progressTrips.setVisibility(View.VISIBLE);
-                recyclerTrips.setVisibility(View.GONE);
-            } else {
-                progressTrips.setVisibility(View.GONE);
-                recyclerTrips.setVisibility(View.VISIBLE);
-            }
-        });
-    }
-
     private void loadInitialData() {
-        // Загрузка начальных данных (города и т.д.)
         bookingViewModel.loadAllRoutes();
+        bookingViewModel.loadAllCities(); // <-- загрузка городов с сервера
     }
 
+    // More robust reset that avoids triggering listeners unnecessarily
     private void resetToInitialState() {
-        // Сбрасываем все состояния и показываем только выбор маршрута
         currentRoute = null;
         currentTrip = null;
-        cardRoutesList.setVisibility(View.VISIBLE);
-        cardTimeSelection.setVisibility(View.GONE);
+        totalPrice = 0;
+        isChild = false;
+        isPet = false;
+
+        if (cardRoutesList != null) cardRoutesList.setVisibility(VISIBLE);
+        if (cardTimeSelection != null) cardTimeSelection.setVisibility(GONE);
         hideRemainingCards();
-        tripsAdapter.updateTrips(new ArrayList<>());
+
+        if (tripsAdapter != null) tripsAdapter.updateTrips(new ArrayList<>());
+        if (routesAdapter != null) routesAdapter.updateRoutes(new ArrayList<>());
+
         clearFields();
-        cbUseMyData.setChecked(false);
-        cbChildSeat.setChecked(false);
-        cbPet.setChecked(false);
-        etRouteSearch.setText("");
+
+        // Avoid triggering checkbox listeners when programmatically changing checked state:
+        if (cbUseMyData != null) {
+            cbUseMyData.setOnCheckedChangeListener(null);
+            cbUseMyData.setChecked(false);
+            cbUseMyData.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    fillUserData();
+                    setFieldsEnabled(false);
+                } else {
+                    setFieldsEnabled(true);
+                    clearFields();
+                }
+            });
+        }
+        if (cbChildSeat != null) {
+            cbChildSeat.setOnCheckedChangeListener(null);
+            cbChildSeat.setChecked(false);
+            cbChildSeat.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                isChild = isChecked;
+                updateTotalPrice();
+            });
+        }
+        if (cbPet != null) {
+            cbPet.setOnCheckedChangeListener(null);
+            cbPet.setChecked(false);
+            cbPet.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                isPet = isChecked;
+                updateTotalPrice();
+            });
+        }
+
+        if (spinnerFrom != null) spinnerFrom.setSelection(0);
+        if (spinnerTo != null) spinnerTo.setSelection(0);
+        if (etRouteSearch != null) etRouteSearch.setText("");
+        if (tvTotalPrice != null) tvTotalPrice.setText(String.format("%.2f BYN", 0.0));
     }
 
     private void searchRoutes() {
-        String routeNumber = etRouteSearch.getText().toString().trim();
-        String from = spinnerFrom.getSelectedItem().toString();
-        String to = spinnerTo.getSelectedItem().toString();
+        String routeNumber = etRouteSearch != null ? etRouteSearch.getText().toString().trim() : "";
+        String from = spinnerFrom != null && spinnerFrom.getSelectedItem() != null ? spinnerFrom.getSelectedItem().toString() : "";
+        String to = spinnerTo != null && spinnerTo.getSelectedItem() != null ? spinnerTo.getSelectedItem().toString() : "";
 
         if (!routeNumber.isEmpty()) {
-            // Поиск по номеру маршрута
-            bookingViewModel.searchRoutesByNumber(routeNumber);
+            bookingViewModel.loadRoutesByNumber(routeNumber);
         } else if (!from.equals("Выберите город") && !to.equals("Выберите город")) {
-            // Поиск по пунктам отправления/назначения
-            bookingViewModel.searchRoutesByPoints(from, to);
+            bookingViewModel.loadRoutesByPoints(from, to);
         } else {
             Toast.makeText(requireContext(), "Введите номер маршрута или выберите пункты", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void onRouteSelected(Route route) {
+        if (route == null) return;
         currentRoute = route;
-        progressTrips.setVisibility(View.VISIBLE);
-
+        if (progressTrips != null) progressTrips.setVisibility(VISIBLE);
         bookingViewModel.loadTripsForRoute(route.getId());
-
-        cardRoutesList.setVisibility(View.GONE);
+        if (cardRoutesList != null) cardRoutesList.setVisibility(GONE);
     }
 
     private void onTripSelected(Trip trip) {
+        if (trip == null) return;
         currentTrip = trip;
-        // Показываем информацию о выбранном рейсе
         updateTripInfo(trip);
         showRemainingCards();
     }
 
     private void updateTripInfo(Trip trip) {
-        // БЕЗОПАСНОЕ обновление - проверяем что currentRoute не null
         if (currentRoute != null && trip != null) {
             String origin = currentRoute.getOrigin() != null ? currentRoute.getOrigin() : "";
             String destination = currentRoute.getDestination() != null ? currentRoute.getDestination() : "";
 
-            tvRouteInfo.setText(origin + " - " + destination);
-            tvDepartureTime.setText(formatDateTime(trip.getDepartureTime()));
-            tvTripPrice.setText(String.format("%.2f ₽", trip.getPrice()));
+            if (tvRouteInfo != null) tvRouteInfo.setText(origin + " - " + destination);
+            if (tvDepartureTime != null) tvDepartureTime.setText(formatDateTime(trip.getDepartureTime()));
+            if (tvTripPrice != null) tvTripPrice.setText(String.format("%.2f BYN", trip.getPrice()));
 
-            // Обновляем общую стоимость
             updateTotalPrice();
         }
     }
 
     private void showRemainingCards() {
-        cardTripInfo.setVisibility(View.VISIBLE);
-        cardServices.setVisibility(View.VISIBLE);
-        cardPassenger.setVisibility(View.VISIBLE);
-        cardTotal.setVisibility(View.VISIBLE);
-        book.setVisibility(View.VISIBLE);
+        if (cardTripInfo != null) cardTripInfo.setVisibility(VISIBLE);
+        if (cardServices != null) cardServices.setVisibility(VISIBLE);
+        if (cardPassenger != null) cardPassenger.setVisibility(VISIBLE);
+        if (cardTotal != null) cardTotal.setVisibility(VISIBLE);
+        if (book != null) book.setVisibility(VISIBLE);
     }
 
     private void hideRemainingCards() {
-        cardTripInfo.setVisibility(View.GONE);
-        cardServices.setVisibility(View.GONE);
-        cardPassenger.setVisibility(View.GONE);
-        cardTotal.setVisibility(View.GONE);
-        book.setVisibility(View.GONE);
+        if (cardTripInfo != null) cardTripInfo.setVisibility(GONE);
+        if (cardServices != null) cardServices.setVisibility(GONE);
+        if (cardPassenger != null) cardPassenger.setVisibility(GONE);
+        if (cardTotal != null) cardTotal.setVisibility(GONE);
+        if (book != null) book.setVisibility(GONE);
     }
 
     private void returnToRouteSelection() {
-        // Возврат к выбору маршрута
         currentRoute = null;
         currentTrip = null;
-        cardRoutesList.setVisibility(View.VISIBLE);
-        cardTimeSelection.setVisibility(View.GONE);
+        if (cardRoutesList != null) cardRoutesList.setVisibility(VISIBLE);
+        if (cardTimeSelection != null) cardTimeSelection.setVisibility(GONE);
         hideRemainingCards();
-        tripsAdapter.updateTrips(new ArrayList<>());
+        if (tripsAdapter != null) tripsAdapter.updateTrips(new ArrayList<>());
     }
 
     private void returnToTripSelection() {
-        // Возврат к выбору рейса
         currentTrip = null;
-        cardTimeSelection.setVisibility(View.VISIBLE);
+        if (cardTimeSelection != null) cardTimeSelection.setVisibility(VISIBLE);
         hideRemainingCards();
     }
 
     private void updateTotalPrice() {
-        if (currentTrip != null) {
+        if (currentTrip != null && tvTotalPrice != null) {
             totalPrice = currentTrip.getPrice();
             if (isPet) totalPrice += petPrice;
             if (isChild) totalPrice += childPrice;
-            tvTotalPrice.setText(String.format("%.2f ₽", totalPrice));
+            tvTotalPrice.setText(String.format("%.2f BYN", totalPrice));
         }
     }
 
-    private List<String> getCities() {
-        List<String> cities = new ArrayList<>();
-        cities.add("Выберите город");
-        cities.add("Москва");
-        cities.add("Санкт-Петербург");
-        cities.add("Казань");
-        cities.add("Сочи");
-        cities.add("Минск");
-        cities.add("Вильнюс");
-        return cities;
-    }
-
     private void handleNoTripsFound() {
-        // Скрываем карточку выбора времени
-        cardTimeSelection.setVisibility(View.GONE);
-
-        // Показываем снова список маршрутов
-        cardRoutesList.setVisibility(View.VISIBLE);
-
-        // Скрываем все остальные карточки
+        if (cardTimeSelection != null) cardTimeSelection.setVisibility(GONE);
+        if (cardRoutesList != null) cardRoutesList.setVisibility(VISIBLE);
         hideRemainingCards();
-
-        // Сбрасываем выбранный маршрут
         currentRoute = null;
-
-        // Показываем сообщение пользователю
         showNoTripsDialog();
     }
 
@@ -428,43 +599,39 @@ public class BookingFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Рейсы не найдены")
                 .setMessage("Для выбранного маршрута нет доступных рейсов. Пожалуйста, выберите другой маршрут.")
-                .setPositiveButton("OK", (dialog, which) -> {
-                    // Диалог закрывается, пользователь остается в выборе маршрута
-                })
+                .setPositiveButton("OK", (dialog, which) -> {})
                 .show();
     }
 
     private String formatDateTime(String dateTime) {
         if (dateTime == null) return "";
-        // Простое форматирование
         return dateTime.replace("T", " ").replace("-", ".");
     }
 
     private void fillUserData() {
         if (currentUser != null) {
-            etFullName.setText(currentUser.getFullName() != null ? currentUser.getFullName() : "");
-            etPhone.setText(currentUser.getPhone() != null ? currentUser.getPhone() : "");
-            etEmail.setText(currentUser.getEmail() != null ? currentUser.getEmail() : "");
+            if (etFullName != null) etFullName.setText(currentUser.getFullName() != null ? currentUser.getFullName() : "");
+            if (etPhone != null) etPhone.setText(currentUser.getPhone() != null ? currentUser.getPhone() : "");
+            if (etEmail != null) etEmail.setText(currentUser.getEmail() != null ? currentUser.getEmail() : "");
         }
     }
 
     private void setFieldsEnabled(boolean enabled) {
-        etFullName.setEnabled(enabled);
-        etPhone.setEnabled(enabled);
-        etEmail.setEnabled(enabled);
+        if (etFullName != null) etFullName.setEnabled(enabled);
+        if (etPhone != null) etPhone.setEnabled(enabled);
+        if (etEmail != null) etEmail.setEnabled(enabled);
 
         int boxStrokeColor = enabled ? R.color.green : R.color.gray_400;
         int hintColor = enabled ? R.color.gray_600 : R.color.gray_400;
         int textColor = enabled ? R.color.black : R.color.gray_600;
 
-        setFieldAppearance(tilFullName, boxStrokeColor, hintColor, textColor);
-        setFieldAppearance(tilPhone, boxStrokeColor, hintColor, textColor);
-        setFieldAppearance(tilEmail, boxStrokeColor, hintColor, textColor);
+        if (tilFullName != null) setFieldAppearance(tilFullName, boxStrokeColor, hintColor, textColor);
+        if (tilPhone != null) setFieldAppearance(tilPhone, boxStrokeColor, hintColor, textColor);
+        if (tilEmail != null) setFieldAppearance(tilEmail, boxStrokeColor, hintColor, textColor);
     }
 
     private void setFieldAppearance(TextInputLayout textInputLayout, int boxStrokeColor, int hintColor, int textColor) {
         textInputLayout.setBoxStrokeColor(ContextCompat.getColor(requireContext(), boxStrokeColor));
-
         textInputLayout.setHintTextColor(ColorStateList.valueOf(
                 ContextCompat.getColor(requireContext(), hintColor)));
 
@@ -475,39 +642,39 @@ public class BookingFragment extends Fragment {
     }
 
     private void clearFields() {
-        etFullName.setText("");
-        etPhone.setText("");
-        etEmail.setText("");
+        if (etFullName != null) etFullName.setText("");
+        if (etPhone != null) etPhone.setText("");
+        if (etEmail != null) etEmail.setText("");
     }
 
     private boolean isFormValid() {
         boolean isValid = true;
 
-        if (Objects.requireNonNull(etFullName.getText()).toString().trim().isEmpty()) {
-            tilFullName.setError("Введите ФИО");
+        if (etFullName == null || Objects.requireNonNull(etFullName.getText()).toString().trim().isEmpty()) {
+            if (tilFullName != null) tilFullName.setError("Введите ФИО");
             isValid = false;
         } else {
-            tilFullName.setError(null);
+            if (tilFullName != null) tilFullName.setError(null);
         }
 
-        if (Objects.requireNonNull(etPhone.getText()).toString().trim().isEmpty()) {
-            tilPhone.setError("Введите телефон");
+        if (etPhone == null || Objects.requireNonNull(etPhone.getText()).toString().trim().isEmpty()) {
+            if (tilPhone != null) tilPhone.setError("Введите телефон");
             isValid = false;
         } else {
-            tilPhone.setError(null);
+            if (tilPhone != null) tilPhone.setError(null);
         }
 
-        if (Objects.requireNonNull(etEmail.getText()).toString().trim().isEmpty()) {
-            tilEmail.setError("Введите email");
+        if (etEmail == null || Objects.requireNonNull(etEmail.getText()).toString().trim().isEmpty()) {
+            if (tilEmail != null) tilEmail.setError("Введите email");
             isValid = false;
         } else {
-            tilEmail.setError(null);
+            if (tilEmail != null) tilEmail.setError(null);
         }
 
         return isValid;
     }
 
-    private void createNewBooking(){
+    private void createNewBooking() {
         if (currentTrip == null) {
             Toast.makeText(requireContext(), "Выберите рейс", Toast.LENGTH_SHORT).show();
             return;
@@ -517,25 +684,21 @@ public class BookingFragment extends Fragment {
             return;
         }
 
-        String name = null;
-        String phone = null;
-        String email = null;
-        long passengerId = -1;
+        long passengerId;
+        if (!cbUseMyData.isChecked()) {
+            String name = Objects.requireNonNull(etFullName.getText()).toString();
+            String phone = Objects.requireNonNull(etPhone.getText()).toString();
+            String email = Objects.requireNonNull(etEmail.getText()).toString();
 
-        if(!cbUseMyData.isChecked()){
-            name = Objects.requireNonNull(etFullName.getText()).toString();
-            phone = Objects.requireNonNull(etPhone.getText()).toString();
-            email = Objects.requireNonNull(etEmail.getText()).toString();
-            currentUser = new User(-1, email, "nul2345gfvsgfsvdfavf4etsdfwdfvfgbsfdgfjsfgdsfhl", name, phone, -1, UserRole.GUEST);
-
-            // Сохраняем гостя и получаем его ID
-            boolean guestAdded = profileViewModel.addGuest(currentUser);
+            // Create guest user locally
+            User guestUser = new User(-1, email, "guest_temp_password", name, phone, 1, UserRole.GUEST);
+            boolean guestAdded = profileViewModel.addGuest(guestUser);
             if (!guestAdded) {
                 Toast.makeText(requireContext(), "Ошибка при создании гостевого аккаунта", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            passengerId = profileViewModel.getIdByEmail(currentUser.getEmail());
+            passengerId = profileViewModel.getIdByEmail(email);
             if (passengerId == -1) {
                 Toast.makeText(requireContext(), "Не удалось получить ID пользователя", Toast.LENGTH_SHORT).show();
                 return;
@@ -549,46 +712,24 @@ public class BookingFragment extends Fragment {
             }
         }
 
-        if (passengerId == -1) {
-            Toast.makeText(requireContext(), "Неверный ID пользователя", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Check if booking already exists
+        bookingViewModel.hasBookingForUserAndTrip(passengerId, currentTrip.getId());
+    }
 
-        if (currentTrip.getId() == -1) {
-            Toast.makeText(requireContext(), "Неверный рейс", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        boolean hasExistingBooking = bookingViewModel.hasBookingForUserAndTrip(passengerId, currentTrip.getId());
-        if (hasExistingBooking) {
-            Toast.makeText(requireContext(), "Вы уже забронировали этот рейс", Toast.LENGTH_LONG).show();
-            return;
+    private void proceedWithBooking() {
+        long passengerId;
+        if (!cbUseMyData.isChecked()) {
+            String email = Objects.requireNonNull(etEmail.getText()).toString();
+            passengerId = profileViewModel.getIdByEmail(email);
+        } else {
+            passengerId = currentUser.getId();
         }
 
         totalPrice = currentTrip.getPrice();
-        if(isPet){
-            totalPrice += petPrice;
-        }
-        if (isChild){
-            totalPrice += childPrice;
-        }
+        if (isPet) totalPrice += petPrice;
+        if (isChild) totalPrice += childPrice;
 
-        try {
-            Booking booking = new Booking(-1, currentTrip.getId(), passengerId, 1,
-                    isChild, isPet, BookingStatus.PENDING, totalPrice);
-
-            bookingViewModel.addBooking(booking);
-            Toast.makeText(requireContext(), "Бронь создана!", Toast.LENGTH_SHORT).show();
-
-            mainViewModel.closeFullscreen();
-        } catch (Exception e) {
-            Toast.makeText(requireContext(), "Ошибка при создании брони: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        }
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        refreshHandler.removeCallbacks(refreshRunnable);
+        Booking booking = new Booking(currentTrip.getId(), passengerId, 1, isChild, isPet, BookingStatus.PENDING, totalPrice);
+        bookingViewModel.createBooking(booking);
     }
 }

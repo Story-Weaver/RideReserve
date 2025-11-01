@@ -22,9 +22,9 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
 import by.story_weaver.ridereserve.Logic.data.models.User;
-import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
+import by.story_weaver.ridereserve.Logic.utils.UiState;
 import by.story_weaver.ridereserve.R;
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -41,7 +41,7 @@ public class UserEditFragment extends Fragment {
     private TextInputEditText etFullName, etEmail, etPhone;
     private TextInputEditText etPassword, etConfirmPassword;
     private TextInputEditText etCurrentRole;
-    private AutoCompleteTextView actvRole;
+    private AutoCompleteTextView actvRole; // use as free text for role selection
     private TextInputLayout tilPassword, tilConfirmPassword;
     private CardView cardRole;
     private Button btnSave, btnCancel;
@@ -82,6 +82,8 @@ public class UserEditFragment extends Fragment {
         loadUserData();
         setupClickListeners();
         checkAdminPermissions();
+
+        observeProfileState();
     }
 
     private void initViews(View view) {
@@ -105,7 +107,12 @@ public class UserEditFragment extends Fragment {
                 android.R.layout.simple_dropdown_item_1line,
                 roleDisplayNames
         );
-        actvRole.setAdapter(adapter);
+        // actvRole is TextInputEditText in this layout; if it's AutoCompleteTextView, cast accordingly.
+        if (actvRole != null) {
+            actvRole.setAdapter(adapter);
+        } else {
+            // fallback: do nothing (role can be typed manually)
+        }
     }
 
     private void loadUserData() {
@@ -116,6 +123,9 @@ public class UserEditFragment extends Fragment {
             etEmail.setText(userToEdit.getEmail());
             etPhone.setText(userToEdit.getPhone());
             etCurrentRole.setText(getRoleDisplayName(userToEdit.getRole()));
+            if (actvRole instanceof android.widget.AutoCompleteTextView) {
+                ((android.widget.AutoCompleteTextView) actvRole).setText(getRoleDisplayName(userToEdit.getRole()), false);
+            }
         }
     }
 
@@ -124,6 +134,8 @@ public class UserEditFragment extends Fragment {
         User currentUser = profileViewModel.getProfile();
         if (currentUser != null && currentUser.getRole() == UserRole.ADMIN) {
             cardRole.setVisibility(VISIBLE);
+        } else {
+            cardRole.setVisibility(GONE);
         }
     }
 
@@ -180,6 +192,35 @@ public class UserEditFragment extends Fragment {
         });
     }
 
+    private void observeProfileState() {
+        profileViewModel.getProfileState().observe(getViewLifecycleOwner(), state -> {
+            if (state == null) return;
+            switch (state.status) {
+                case LOADING:
+                    btnSave.setEnabled(false);
+                    break;
+                case SUCCESS:
+                    btnSave.setEnabled(true);
+                    // update UI/local repo already done in ViewModel
+                    showSuccessMessage("Данные профиля успешно обновлены");
+                    mainViewModel.closeFullscreen();
+                    break;
+                case ERROR:
+                    btnSave.setEnabled(true);
+                    showError(state.message != null ? state.message : "Ошибка обновления профиля");
+                    break;
+            }
+        });
+    }
+
+    private void showError(String message) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_LONG).show();
+    }
+
+    private void showSuccessMessage(String message) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+    }
+
     private boolean validateForm() {
         boolean isValid = true;
 
@@ -215,7 +256,7 @@ public class UserEditFragment extends Fragment {
         // Проверка пароля, если он введен
         String password = etPassword.getText().toString();
         if (!password.isEmpty()) {
-            if (password.length() < 4) {
+            if (password.length() < 6) {
                 etPassword.setError("Пароль должен содержать минимум 6 символов");
                 isValid = false;
             } else {
@@ -235,7 +276,6 @@ public class UserEditFragment extends Fragment {
     }
 
     private void saveUserData() {
-        // Собираем данные из формы
         User updatedUser = new User();
         updatedUser.setId(editingUserId);
         updatedUser.setFullName(etFullName.getText().toString().trim());
@@ -243,12 +283,14 @@ public class UserEditFragment extends Fragment {
         updatedUser.setPhone(etPhone.getText().toString().trim());
 
         String newPassword = etPassword.getText().toString();
-        if (!newPassword.isEmpty()) {
-            updatedUser.setPassword(newPassword); // В реальном приложении нужно хэшировать
+        if (newPassword.isEmpty()) {
+            updatedUser.setPassword(profileViewModel.getUserById(editingUserId).getPassword());
+        } else {
+            updatedUser.setPassword(newPassword);
         }
+        updatedUser.setInSystem(0);
 
-        User currentUser = profileViewModel.getProfile();
-        if (currentUser != null && currentUser.getRole() == UserRole.ADMIN) {
+        if (profileViewModel.getProfile() != null && profileViewModel.getProfile().getRole() == UserRole.ADMIN) {
             String selectedRole = actvRole.getText().toString();
             if (!selectedRole.isEmpty()) {
                 updatedUser.setRole(getRoleFromDisplayName(selectedRole));
@@ -264,18 +306,8 @@ public class UserEditFragment extends Fragment {
                 updatedUser.setRole(originalUser.getRole());
             }
         }
-        if(profileViewModel.getProfile().getId() == editingUserId){
-            updatedUser.setInSystem(1);
-        } else updatedUser.setInSystem(0);
 
+        // trigger network + local update via ViewModel
         profileViewModel.editUser(updatedUser);
-
-        showSuccessMessage("Данные профиля успешно обновлены");
-
-        mainViewModel.closeFullscreen();
-    }
-
-    private void showSuccessMessage(String message) {
-        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show();
     }
 }

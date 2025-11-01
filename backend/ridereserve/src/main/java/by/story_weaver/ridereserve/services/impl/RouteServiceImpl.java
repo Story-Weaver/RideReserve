@@ -1,6 +1,9 @@
 package by.story_weaver.ridereserve.services.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +63,24 @@ public class RouteServiceImpl implements RouteService{
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+    @Override
+    public List<String> getAllCities() {
+        try {
+            List<String> origins = routeRepository.findDistinctOrigins();
+            List<String> destinations = routeRepository.findDistinctDestinations();
+            Set<String> cities = new HashSet<>();
+            if (origins != null) cities.addAll(origins);
+            if (destinations != null) cities.addAll(destinations);
+            // Сортировка (по желанию)
+            List<String> sorted = new ArrayList<>(cities);
+            sorted.sort(String::compareTo);
+            return sorted;
+        } catch (Exception e) {
+            // лог (не глушим)
+            e.printStackTrace();
+            return List.of();
         }
     }
 

@@ -8,9 +8,12 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
@@ -31,9 +34,10 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     }
 
     public BookingAdapter(List<Booking> bookingList, List<Route> routeList, List<Trip> tripList) {
-        this.bookingList = bookingList;
-        this.routeList = routeList;
-        this.tripList = tripList;
+        // никогда не держим null-списки
+        this.bookingList = bookingList != null ? bookingList : new ArrayList<>();
+        this.routeList = routeList != null ? routeList : new ArrayList<>();
+        this.tripList = tripList != null ? tripList : new ArrayList<>();
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -43,7 +47,6 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     @NonNull
     @Override
     public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Создаем view из XML-макета
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.booking_card, parent, false);
         return new BookingViewHolder(view);
@@ -51,20 +54,13 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
     @Override
     public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
-        // Получаем данные для текущей позиции
+        if (bookingList == null || position < 0 || position >= bookingList.size()) {
+            return;
+        }
+
         Booking currentBooking = bookingList.get(position);
-        Trip currentTrip = null;
-        Route currentRoute = null;
-        for(int i = 0; i < tripList.size(); i++){
-            if(currentBooking.getTripId() == tripList.get(i).getId()){
-                currentTrip = tripList.get(i);
-            }
-        }
-        for(int i = 0; i < routeList.size(); i++){
-            if(currentTrip.getRouteId() == routeList.get(i).getId()){
-                currentRoute = routeList.get(i);
-            }
-        }
+        Trip currentTrip = findTripById(currentBooking != null ? currentBooking.getTripId() : null);
+        Route currentRoute = findRouteByTrip(currentTrip);
 
         holder.bind(currentBooking, currentTrip, currentRoute);
     }
@@ -74,26 +70,58 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         return bookingList != null ? bookingList.size() : 0;
     }
 
-    // Обновление списка бронирований
+    // безопасное обновление списков
     @SuppressLint("NotifyDataSetChanged")
-    public void updateBookings(List<Booking> newBookings) {
-        bookingList.clear();
-        this.bookingList = newBookings;
-        notifyDataSetChanged(); // Уведомляем адаптер об изменениях
+    public void updateAdapterBookings(List<Booking> newBookings) {
+        this.bookingList = newBookings != null ? new ArrayList<>(newBookings) : new ArrayList<>();
+        notifyDataSetChanged();
     }
 
-    // Получение брони по позиции
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateAdapterRoutes(List<Route> newRoute) {
+        this.routeList = newRoute != null ? new ArrayList<>(newRoute) : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateAdapterTrips(List<Trip> newTrips) {
+        this.tripList = newTrips != null ? new ArrayList<>(newTrips) : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
     public Booking getBookingAt(int position) {
-        if (position >= 0 && position < bookingList.size()) {
+        if (bookingList != null && position >= 0 && position < bookingList.size()) {
             return bookingList.get(position);
         }
         return null;
     }
 
-    // ViewHolder класс - отвечает за отображение одного элемента
+    // Вспомогательные поиски — защищены от null
+    private Trip findTripById(Long tripId) {
+        if (tripId == null || tripList == null) return null;
+        for (Trip t : tripList) {
+            if (t != null && Objects.equals(tripId, t.getId())) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private Route findRouteByTrip(Trip trip) {
+        if (trip == null || routeList == null) return null;
+        Long routeId = trip.getRouteId();
+        if (routeId == null) return null;
+        for (Route r : routeList) {
+            if (r != null && Objects.equals(routeId, r.getId())) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    // ViewHolder
     public class BookingViewHolder extends RecyclerView.ViewHolder {
 
-        // Объявляем все View из макета
         private CardView cardView;
         private TextView tvRouteNumber;
         private TextView tvStatus;
@@ -106,9 +134,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
         public BookingViewHolder(@NonNull View itemView) {
             super(itemView);
-
             initializeViews(itemView);
-
             setupClickListeners();
         }
 
@@ -125,75 +151,85 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         }
 
         private void setupClickListeners() {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (itemClickListener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            itemClickListener.onItemClick(position);
-                        }
+            itemView.setOnClickListener(v -> {
+                if (itemClickListener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        itemClickListener.onItemClick(position);
                     }
                 }
             });
 
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (itemClickListener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            itemClickListener.onItemLongClick(position);
-                            return true;
-                        }
+            itemView.setOnLongClickListener(v -> {
+                if (itemClickListener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        itemClickListener.onItemLongClick(position);
+                        return true;
                     }
-                    return false;
                 }
+                return false;
             });
         }
 
         @SuppressLint("SetTextI18n")
         public void bind(Booking booking, Trip trip, Route route) {
-            tvRouteNumber.setText("Маршрут № " + route.getName());
-            tvStatus.setText(booking.getStatus().toString());
-            tvRoute.setText(route.getDestination());
-            tvDateTime.setText(trip.getArrivalTime());
-            checkChild.setChecked(booking.isChildSeatNeeded());
-            checkPet.setChecked(booking.isHasPet());
-            tvPassengers.setText("Пассажиры: " + booking.getSeatNumber());
-            tvPrice.setText(String.format(Locale.getDefault(), "%.2f BYN", booking.getPrice()));
+            // безопасные значения-по-умолчанию
+            String routeName = route != null && route.getName() != null ? route.getName() : "—";
+            String destination = route != null && route.getDestination() != null ? route.getDestination() : "—";
+            String arrivalTime = trip != null && trip.getArrivalTime() != null ? trip.getArrivalTime() : "—";
+            String passengers = booking != null ? String.valueOf(booking.getSeatNumber()) : "—";
+            double price = booking != null ? booking.getPrice() : 0.0;
+            BookingStatus status = booking != null ? booking.getStatus() : null;
 
-            setupStatusAppearance(booking.getStatus());
+            tvRouteNumber.setText("Маршрут № " + routeName);
+            tvStatus.setText(status != null ? status.toString() : "UNKNOWN");
+            tvRoute.setText(destination);
+            tvDateTime.setText(arrivalTime);
+            checkChild.setChecked(booking != null && booking.isChildSeatNeeded());
+            checkPet.setChecked(booking != null && booking.isHasPet());
+            tvPassengers.setText("Пассажиры: " + passengers);
+            tvPrice.setText(String.format(Locale.getDefault(), "%.2f BYN", price));
+
+            setupStatusAppearance(status);
         }
 
         private void setupStatusAppearance(BookingStatus status) {
-            int backgroundColor;
-            int textColor;
+            int backgroundColorRes;
+            int textColorRes;
 
-            switch (status) {
-                case CONFIRMED:
-                    backgroundColor = R.color.green;
-                    textColor = R.color.white;
-                    break;
-                case PENDING:
-                    backgroundColor = R.color.orange;
-                    textColor = R.color.white;
-                    break;
-                case CANCELLED:
-                    backgroundColor = R.color.red;
-                    textColor = R.color.white;
-                    break;
-                case COMPLETED:
-                    backgroundColor = R.color.gray_700;
-                    textColor = R.color.white;
-                default:
-                    backgroundColor = R.color.gray;
-                    textColor = android.R.color.black;
-                    break;
+            if (status == null) {
+                backgroundColorRes = R.color.gray;
+                textColorRes = android.R.color.black;
+            } else {
+                switch (status) {
+                    case CONFIRMED:
+                        backgroundColorRes = R.color.green;
+                        textColorRes = R.color.white;
+                        break;
+                    case PENDING:
+                        backgroundColorRes = R.color.orange;
+                        textColorRes = R.color.white;
+                        break;
+                    case CANCELLED:
+                        backgroundColorRes = R.color.red;
+                        textColorRes = R.color.white;
+                        break;
+                    case COMPLETED:
+                        backgroundColorRes = R.color.gray_700;
+                        textColorRes = R.color.white;
+                        break;
+                    default:
+                        backgroundColorRes = R.color.gray;
+                        textColorRes = android.R.color.black;
+                        break;
+                }
             }
 
-            tvStatus.setBackgroundColor(itemView.getContext().getResources().getColor(backgroundColor));
-            tvStatus.setTextColor(itemView.getContext().getResources().getColor(textColor));
+            int bg = ContextCompat.getColor(itemView.getContext(), backgroundColorRes);
+            int txt = ContextCompat.getColor(itemView.getContext(), textColorRes);
+            tvStatus.setBackgroundColor(bg);
+            tvStatus.setTextColor(txt);
         }
     }
 }

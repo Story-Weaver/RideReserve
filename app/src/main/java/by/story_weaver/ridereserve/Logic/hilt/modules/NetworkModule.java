@@ -24,7 +24,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @InstallIn(SingletonComponent.class)
 public class NetworkModule {
 
-    private static final String BASE_URL = "http://your-server.com:8080/api/";
+    //private static final String BASE_URL = "http://192.168.0.85:8080/api/";
+    private static final String BASE_URL = "http://192.168.43.146:8080/api/";
 
     @Provides
     @Singleton

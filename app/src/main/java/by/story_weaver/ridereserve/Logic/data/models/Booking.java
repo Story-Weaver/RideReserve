@@ -18,6 +18,11 @@ public class Booking {
         this.id = id; this.tripId = tripId; this.passengerId = passengerId; this.seatNumber = seatNumber;
         this.childSeatNeeded = childSeatNeeded; this.hasPet = hasPet; this.status = status; this.price = price;
     }
+    public Booking(long tripId, long passengerId, int seatNumber,
+                   boolean childSeatNeeded, boolean hasPet, BookingStatus status, double price){
+        this.tripId = tripId; this.passengerId = passengerId; this.seatNumber = seatNumber;
+        this.childSeatNeeded = childSeatNeeded; this.hasPet = hasPet; this.status = status; this.price = price;
+    }
 
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }

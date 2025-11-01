@@ -74,8 +74,8 @@ public class AdminDashboardFragment extends Fragment {
     }
 
     private void observeData() {
-        adminViewModel.getAdminStats().observe(getViewLifecycleOwner(), this::updateStatistics);
-        adminViewModel.getActiveTrips().observe(getViewLifecycleOwner(), this::updateTrips);
+        //adminViewModel.getAdminStats().observe(getViewLifecycleOwner(), this::updateStatistics);
+        //adminViewModel.getActiveTrips().observe(getViewLifecycleOwner(), this::updateTrips);
     }
 
     private void loadData() {

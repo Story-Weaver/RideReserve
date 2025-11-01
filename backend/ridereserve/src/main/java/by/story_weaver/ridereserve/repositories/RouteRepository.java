@@ -19,4 +19,10 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     @Query(value = "SELECT * FROM routes WHERE id = :id", nativeQuery = true)
     Route getRouteById(@Param("id") long id);
+
+    @Query("select distinct r.origin from Route r where r.origin is not null")
+    List<String> findDistinctOrigins();
+
+    @Query("select distinct r.destination from Route r where r.destination is not null")
+    List<String> findDistinctDestinations();
 }

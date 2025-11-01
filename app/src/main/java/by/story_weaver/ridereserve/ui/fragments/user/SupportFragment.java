@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +36,7 @@ public class SupportFragment extends Fragment {
     private ProfileViewModel profileViewModel;
 
     // Views
-    private AutoCompleteTextView actvFeedbackType;
+    private Spinner spinnerFeedbackType;
     private TextInputEditText etSubject, etMessage, etContactEmail;
     private Button btnAttach, btnSend;
     private TextView tvAttachedFiles;
@@ -49,7 +50,6 @@ public class SupportFragment extends Fragment {
             "Другое"
     };
 
-    // Флаг для отслеживания, была ли тема установлена автоматически
     private boolean isSubjectAutoSet = false;
 
     @Override
@@ -72,7 +72,7 @@ public class SupportFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        actvFeedbackType = view.findViewById(R.id.actvFeedbackType);
+        spinnerFeedbackType = view.findViewById(R.id.spinnerFeedbackType);
         etSubject = view.findViewById(R.id.etSubject);
         etMessage = view.findViewById(R.id.etMessage);
         etContactEmail = view.findViewById(R.id.etContactEmail);
@@ -82,66 +82,27 @@ public class SupportFragment extends Fragment {
     }
 
     private void setupFeedbackTypeDropdown() {
-        // Создаем адаптер без фильтрации - всегда показывает все элементы
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
+                android.R.layout.simple_spinner_item,
                 feedbackTypes
-        ) {
-            @Override
-            public android.widget.Filter getFilter() {
-                return new android.widget.Filter() {
-                    @Override
-                    protected FilterResults performFiltering(CharSequence constraint) {
-                        FilterResults results = new FilterResults();
-                        // Всегда возвращаем полный список, независимо от введенного текста
-                        results.values = feedbackTypes;
-                        results.count = feedbackTypes.length;
-                        return results;
-                    }
-
-                    @Override
-                    protected void publishResults(CharSequence constraint, FilterResults results) {
-                        if (results.values != null) {
-                            clear();
-                            addAll((String[]) results.values);
-                            notifyDataSetChanged();
-                        }
-                    }
-                };
-            }
-        };
-
-        actvFeedbackType.setAdapter(adapter);
-
-        // Устанавливаем threshold в 0, чтобы выпадающий список показывался сразу при фокусе
-        actvFeedbackType.setThreshold(0);
-
-        // Показываем выпадающий список при получении фокуса
-        actvFeedbackType.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    actvFeedbackType.showDropDown();
-                }
-            }
-        });
-
-        // Также показываем выпадающий список при клике (на случай, если поле уже в фокусе)
-        actvFeedbackType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actvFeedbackType.showDropDown();
-            }
-        });
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFeedbackType.setAdapter(adapter);
 
         // Добавляем слушатель для автоматического заполнения темы
-        actvFeedbackType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        spinnerFeedbackType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedType = feedbackTypes[position];
                 autoFillSubject(selectedType);
                 autoFillMessageHint(selectedType);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Ничего не делаем
             }
         });
     }
@@ -273,14 +234,6 @@ public class SupportFragment extends Fragment {
     private boolean validateForm() {
         boolean isValid = true;
 
-        // Проверка типа обращения
-        if (actvFeedbackType.getText().toString().trim().isEmpty()) {
-            actvFeedbackType.setError("Выберите тип обращения");
-            isValid = false;
-        } else {
-            actvFeedbackType.setError(null);
-        }
-
         // Проверка темы
         if (etSubject.getText().toString().trim().isEmpty()) {
             etSubject.setError("Введите тему обращения");
@@ -316,8 +269,6 @@ public class SupportFragment extends Fragment {
     }
 
     private void sendFeedback() {
-        // Собираем данные из формы
-        String feedbackType = actvFeedbackType.getText().toString().trim();
         String subject = etSubject.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
         String contactEmail = etContactEmail.getText().toString().trim();
@@ -329,7 +280,7 @@ public class SupportFragment extends Fragment {
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "[Обратная связь] " + subject);
 
         // Формируем тело письма
-        String emailBody = createEmailBody(feedbackType, subject, message, contactEmail);
+        String emailBody = createEmailBody(subject, message, contactEmail);
         emailIntent.putExtra(Intent.EXTRA_TEXT, emailBody);
 
         // Добавляем прикрепленные файлы
@@ -341,16 +292,14 @@ public class SupportFragment extends Fragment {
             startActivity(Intent.createChooser(emailIntent, "Отправить обращение через..."));
             showSuccessMessage("Выберите почтовое приложение для отправки");
 
-            // Очищаем форму после успешной отправки
             clearForm();
         } catch (android.content.ActivityNotFoundException ex) {
             showErrorMessage("Не найдено почтовое приложение");
         }
     }
 
-    private String createEmailBody(String feedbackType, String subject, String message, String contactEmail) {
-        return "Тип обращения: " + feedbackType + "\n\n" +
-                "Тема: " + subject + "\n\n" +
+    private String createEmailBody(String subject, String message, String contactEmail) {
+        return  "Тема: " + subject + "\n\n" +
                 "Сообщение:\n" + message + "\n\n" +
                 "---\n" +
                 "Контактный email: " + contactEmail + "\n" +
@@ -361,15 +310,12 @@ public class SupportFragment extends Fragment {
     }
 
     private void clearForm() {
-        // Очищаем форму после отправки
-        actvFeedbackType.setText("");
         etSubject.setText("");
         etMessage.setText("");
         attachedFiles.clear();
         updateAttachedFilesUI();
         isSubjectAutoSet = false;
 
-        // Восстанавливаем стандартный hint для сообщения
         etMessage.setHint("Опишите ваше предложение, проблему или вопрос...");
     }
 

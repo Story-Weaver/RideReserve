@@ -1,8 +1,6 @@
 package by.story_weaver.ridereserve.ui.fragments.driver;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -12,7 +10,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,7 +20,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import by.story_weaver.ridereserve.Logic.adapters.DriverTripsAdapter;
 import by.story_weaver.ridereserve.Logic.data.enums.TripStatus;
@@ -32,6 +28,7 @@ import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
+import by.story_weaver.ridereserve.Logic.utils.UiState;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
@@ -50,14 +47,14 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     private TextInputEditText etSearch;
 
     private TextView tvTotalTrips, tvUpcomingTrips, tvCompletedTrips;
-    private final Handler dataHandler = new Handler(Looper.getMainLooper());
-    private Runnable dataLoadRunnable;
 
     private List<Trip> originalTrips = new ArrayList<>();
     private List<Route> originalRoutes = new ArrayList<>();
     private List<Vehicle> originalVehicles = new ArrayList<>();
     private List<Booking> originalBookings = new ArrayList<>();
     private List<Trip> filteredTrips = new ArrayList<>();
+
+    private User currentUser;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,17 +73,16 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
         initViews(view);
         setupRecyclerView();
         setupClickListeners();
+        setupObservers();
 
-        loadDriverTrips();
-        bookingViewModel.getIsSomethingChanged().observe(getViewLifecycleOwner(), flag -> {
-            scheduleDataLoading();
-        });
+        loadCurrentUser();
+        loadInitialData();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        scheduleDataLoading();
+        refreshData();
     }
 
     private void initViews(View view) {
@@ -110,7 +106,6 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     }
 
     private void setupClickListeners() {
-
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -123,55 +118,73 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
                 searchTrips(s.toString());
             }
         });
+    }
 
-        etSearch.setOnEditorActionListener((v, actionId, event) -> {
-            String query = etSearch.getText().toString();
-            searchTrips(query);
-            return true;
+    private void setupObservers() {
+        // Observe driver trips
+        bookingViewModel.getDriverTrips().observe(getViewLifecycleOwner(), tripsState -> {
+            if (tripsState.status == UiState.Status.SUCCESS && tripsState.data != null) {
+                originalTrips = tripsState.data;
+                filteredTrips = new ArrayList<>(originalTrips);
+                Collections.reverse(filteredTrips);
+                adapter.updateTrips(filteredTrips);
+                updateStatistics(filteredTrips);
+            }
+        });
+
+        // Observe routes for search functionality
+        bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), routesState -> {
+            if (routesState.status == UiState.Status.SUCCESS && routesState.data != null) {
+                originalRoutes = routesState.data;
+                updateAdapterData();
+            }
+        });
+
+        // Observe bookings
+        bookingViewModel.getAllBookings().observe(getViewLifecycleOwner(), bookingsState -> {
+            if (bookingsState.status == UiState.Status.SUCCESS && bookingsState.data != null) {
+                originalBookings = bookingsState.data;
+                updateAdapterData();
+            }
+        });
+
+        // Observe vehicles
+        bookingViewModel.getAllVehicles().observe(getViewLifecycleOwner(), vehiclesState -> {
+            if (vehiclesState.status == UiState.Status.SUCCESS && vehiclesState.data != null) {
+                originalVehicles = vehiclesState.data;
+                updateAdapterData();
+            }
+        });
+
+        // Observe trip status changes to refresh data
+        bookingViewModel.getTripStatusChanged().observe(getViewLifecycleOwner(), tripState -> {
+            if (tripState.status == UiState.Status.SUCCESS) {
+                refreshData();
+            }
         });
     }
 
-    private void scheduleDataLoading() {
-        if (dataLoadRunnable != null) {
-            dataHandler.removeCallbacks(dataLoadRunnable);
-        }
-
-        dataLoadRunnable = this::loadDriverTrips;
-
-        dataHandler.postDelayed(dataLoadRunnable, 500);
+    private void loadCurrentUser() {
+        currentUser = profileViewModel.getProfile();
     }
 
-    private void loadDriverTrips() {
-        User currentUser = profileViewModel.getProfile();
+    private void loadInitialData() {
         if (currentUser != null) {
-            List<Trip> allTrips = bookingViewModel.getTriplist();
-            List<Trip> driverTrips = filterTripsForDriver(allTrips, currentUser.getId());
-
-            List<Route> routes = bookingViewModel.getRoutelist();
-            List<Vehicle> vehicles = bookingViewModel.getVehiclelist();
-            List<Booking> bookings = bookingViewModel.getBookinglist();
-
-            originalTrips = new ArrayList<>(driverTrips);
-            originalRoutes = new ArrayList<>(routes);
-            originalVehicles = new ArrayList<>(vehicles);
-            originalBookings = new ArrayList<>(bookings);
-            filteredTrips = new ArrayList<>(driverTrips);
-            Collections.reverse(filteredTrips);
-
-            adapter.updateAllData(filteredTrips, routes, vehicles, bookings);
-
-            updateStatistics(filteredTrips);
+            bookingViewModel.loadDriverTrips(currentUser.getId());
+            bookingViewModel.loadAllRoutes();
+            bookingViewModel.loadAllBookings();
+            bookingViewModel.loadAllVehicles();
         }
     }
 
-    private List<Trip> filterTripsForDriver(List<Trip> allTrips, long driverId) {
-        List<Trip> driverTrips = new ArrayList<>();
-        for (Trip trip : allTrips) {
-            if (trip.getDriverId() == driverId) {
-                driverTrips.add(trip);
-            }
+    private void refreshData() {
+        if (currentUser != null) {
+            bookingViewModel.loadDriverTrips(currentUser.getId());
         }
-        return driverTrips;
+    }
+
+    private void updateAdapterData() {
+        adapter.updateAllData(filteredTrips, originalRoutes, originalVehicles, originalBookings);
     }
 
     private void updateStatistics(List<Trip> trips) {
@@ -245,22 +258,5 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     private void openTripDetails(Trip trip) {
         TripDetailFragment fragment = TripDetailFragment.newInstance(trip.getId());
         mainViewModel.openFullscreen(fragment);
-    }
-
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (dataLoadRunnable != null) {
-            dataHandler.removeCallbacks(dataLoadRunnable);
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (dataLoadRunnable != null) {
-            dataHandler.removeCallbacks(dataLoadRunnable);
-        }
     }
 }

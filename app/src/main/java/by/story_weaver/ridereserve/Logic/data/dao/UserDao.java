@@ -22,6 +22,7 @@ public class UserDao {
 
     public void addUser(@NonNull User user){
         ContentValues values = new ContentValues();
+        values.put(DatabaseContract.Users.COL_ID, user.getId());
         values.put(DatabaseContract.Users.COL_EMAIL, user.getEmail());
         values.put(DatabaseContract.Users.COL_PASSWORD, user.getPassword());
         values.put(DatabaseContract.Users.COL_FULL_NAME, user.getFullName());

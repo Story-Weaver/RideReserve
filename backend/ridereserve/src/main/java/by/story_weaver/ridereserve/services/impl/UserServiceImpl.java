@@ -57,9 +57,9 @@ public class UserServiceImpl implements UserService{
     @Override
     public User updateUser(User user) {
         try {
-            userRepository.save(user);
-            return userRepository.findByEmail(user.getEmail());
+            return userRepository.save(user);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return null;
         }
     }

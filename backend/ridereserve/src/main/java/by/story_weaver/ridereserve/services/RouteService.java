@@ -6,6 +6,7 @@ import by.story_weaver.ridereserve.models.Route;
 
 public interface RouteService {
     public List<Route> getAllRoutes();
+    public List<String> getAllCities();
     public Route getRouteById(long id);
     public Route createRoute(Route route);
     public Route updateRoute(Route route);

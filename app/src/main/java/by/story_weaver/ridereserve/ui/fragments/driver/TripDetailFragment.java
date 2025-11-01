@@ -30,7 +30,7 @@ import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
-import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
+import by.story_weaver.ridereserve.Logic.utils.UiState;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
@@ -45,6 +45,7 @@ public class TripDetailFragment extends Fragment {
     private long tripId;
     private Trip currentTrip;
     private Vehicle currentVehicle;
+    private Route currentRoute;
     private BookingViewModel bookingViewModel;
     private ProfileViewModel profileViewModel;
     private MainViewModel mainViewModel;
@@ -57,6 +58,8 @@ public class TripDetailFragment extends Fragment {
     private RecyclerView rvPassengers;
 
     private PassengerAdapter passengerAdapter;
+    private List<Booking> currentBookings = new ArrayList<>();
+    private List<User> currentPassengers = new ArrayList<>();
 
     public static TripDetailFragment newInstance(long tripId) {
         TripDetailFragment fragment = new TripDetailFragment();
@@ -90,8 +93,10 @@ public class TripDetailFragment extends Fragment {
 
         initViews(view);
         setupPassengersRecyclerView();
-        loadTripData();
+        setupObservers();
         setupClickListeners();
+
+        loadTripData();
     }
 
     private void initViews(View view) {
@@ -118,24 +123,77 @@ public class TripDetailFragment extends Fragment {
         rvPassengers.setAdapter(passengerAdapter);
     }
 
-    private void loadTripData() {
-        currentTrip = findTripById(tripId);
-        if (currentTrip != null) {
-            updateTripInfo(currentTrip);
-            loadRelatedData(currentTrip);
-            loadPassengers(currentTrip.getId());
-            updateActionButtons(currentTrip.getStatus());
-        }
+    private void setupObservers() {
+        // Observe trip data
+        bookingViewModel.getTripById().observe(getViewLifecycleOwner(), tripState -> {
+            if (tripState.status == UiState.Status.SUCCESS && tripState.data != null) {
+                currentTrip = tripState.data;
+                updateTripInfo(currentTrip);
+                loadRelatedData(currentTrip);
+                updateActionButtons(currentTrip.getStatus());
+
+                // Load bookings for this trip
+                bookingViewModel.loadBookingsForTrip(currentTrip.getId());
+            }
+        });
+
+        // Observe bookings for trip
+        bookingViewModel.getBookingsForTrip().observe(getViewLifecycleOwner(), bookingsState -> {
+            if (bookingsState.status == UiState.Status.SUCCESS && bookingsState.data != null) {
+                currentBookings = filterActiveBookings(bookingsState.data);
+                loadPassengersData();
+            }
+        });
+
+        // Observe vehicle data
+        bookingViewModel.getVehicleById().observe(getViewLifecycleOwner(), vehicleState -> {
+            if (vehicleState.status == UiState.Status.SUCCESS && vehicleState.data != null) {
+                currentVehicle = vehicleState.data;
+                updateVehicleInfo();
+                updatePassengersInfo();
+            }
+        });
+
+        // Observe user data for passengers
+        bookingViewModel.getUserById().observe(getViewLifecycleOwner(), userState -> {
+            if (userState.status == UiState.Status.SUCCESS && userState.data != null) {
+                // Check if we already have this user in the list
+                boolean userExists = false;
+                for (User passenger : currentPassengers) {
+                    if (passenger.getId() == userState.data.getId()) {
+                        userExists = true;
+                        break;
+                    }
+                }
+
+                if (!userExists) {
+                    currentPassengers.add(userState.data);
+                    passengerAdapter.updatePassengers(currentPassengers, currentBookings);
+                    updatePassengersInfo();
+                }
+            }
+        });
+
+        // Observe trip status changes
+        bookingViewModel.getTripStatusChanged().observe(getViewLifecycleOwner(), tripState -> {
+            if (tripState.status == UiState.Status.SUCCESS && tripState.data != null) {
+                currentTrip = tripState.data;
+                updateTripInfo(currentTrip);
+                updateActionButtons(currentTrip.getStatus());
+            }
+        });
+
+        // Observe booking status changes
+        bookingViewModel.getBookingStatusChanged().observe(getViewLifecycleOwner(), bookingState -> {
+            if (bookingState.status == UiState.Status.SUCCESS) {
+                // Refresh bookings after status change
+                bookingViewModel.loadBookingsForTrip(tripId);
+            }
+        });
     }
 
-    private Trip findTripById(long tripId) {
-        List<Trip> allTrips = bookingViewModel.getTriplist();
-        for (Trip trip : allTrips) {
-            if (trip.getId() == tripId) {
-                return trip;
-            }
-        }
-        return null;
+    private void loadTripData() {
+        bookingViewModel.loadTripById(tripId);
     }
 
     @SuppressLint("SetTextI18n")
@@ -148,22 +206,23 @@ public class TripDetailFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void loadRelatedData(Trip trip) {
-        Route route = findRouteById(trip.getRouteId());
-        if (route != null) {
-            tvDeparture.setText(route.getOrigin());
-            tvDestination.setText(route.getDestination());
-        }
+        // Load route data
+        bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), routesState -> {
+            if (routesState.status == UiState.Status.SUCCESS && routesState.data != null) {
+                currentRoute = findRouteById(routesState.data, trip.getRouteId());
+                if (currentRoute != null) {
+                    tvDeparture.setText(currentRoute.getOrigin());
+                    tvDestination.setText(currentRoute.getDestination());
+                }
+            }
+        });
 
-        currentVehicle = findVehicleById(trip.getVehicleId());
-        if (currentVehicle != null) {
-            tvVehicleInfo.setText(currentVehicle.getModel() + " (" + currentVehicle.getPlateNumber() + ")");
-            tvSeats.setText(currentVehicle.getSeatsCount() + " мест");
-        }
+        // Load vehicle data
+        bookingViewModel.loadVehicleById(trip.getVehicleId());
     }
 
-    private Route findRouteById(long routeId) {
-        List<Route> allRoutes = bookingViewModel.getRoutelist();
-        for (Route route : allRoutes) {
+    private Route findRouteById(List<Route> routes, long routeId) {
+        for (Route route : routes) {
             if (route.getId() == routeId) {
                 return route;
             }
@@ -171,87 +230,57 @@ public class TripDetailFragment extends Fragment {
         return null;
     }
 
-    private Vehicle findVehicleById(long vehicleId) {
-        List<Vehicle> allVehicles = bookingViewModel.getVehiclelist();
-        for (Vehicle vehicle : allVehicles) {
-            if (vehicle.getId() == vehicleId) {
-                return vehicle;
-            }
+    private void updateVehicleInfo() {
+        if (currentVehicle != null) {
+            tvVehicleInfo.setText(currentVehicle.getModel() + " (" + currentVehicle.getPlateNumber() + ")");
+            tvSeats.setText(currentVehicle.getSeatsCount() + " мест");
         }
-        return null;
     }
 
-    private void loadPassengers(long tripId) {
-        List<Booking> tripBookings = getBookingsForTrip(tripId);
-        List<User> passengers = getPassengersFromBookings(tripBookings);
+    private void loadPassengersData() {
+        currentPassengers.clear();
 
-        Log.v("TripDetail", "Найдено бронирований: " + tripBookings.size());
-        Log.v("TripDetail", "Найдено пассажиров: " + passengers.size());
-
-        if (passengers.isEmpty()) {
+        if (currentBookings.isEmpty()) {
             cardPassengers.setVisibility(View.GONE);
         } else {
             cardPassengers.setVisibility(View.VISIBLE);
-            passengerAdapter.updatePassengers(passengers, tripBookings);
-        }
-
-        updatePassengersInfo(tripBookings);
-        updateTotalPrice(tripBookings);
-    }
-
-    private List<Booking> getBookingsForTrip(long tripId) {
-        List<Booking> tripBookings = new ArrayList<>();
-        List<Booking> allBookings = bookingViewModel.getBookinglist();
-
-        Log.v("TripDetail", "Всего бронирований в системе: " + allBookings.size());
-
-        for (Booking booking : allBookings) {
-            Log.v("TripDetail", "Бронирование: tripId=" + booking.getTripId() + ", passengerId=" + booking.getPassengerId());
-            if (booking.getTripId() == tripId && booking.getStatus() != BookingStatus.CANCELLED) {
-                tripBookings.add(booking);
-                Log.v("TripDetail", "Добавлено бронирование для поездки " + tripId);
+            // Load each passenger's data
+            for (Booking booking : currentBookings) {
+                bookingViewModel.loadUserById(booking.getPassengerId());
             }
         }
 
-        Log.v("TripDetail", "Итоговое количество бронирований для поездки " + tripId + ": " + tripBookings.size());
-        return tripBookings;
+        updatePassengersInfo();
+        updateTotalPrice();
     }
 
-    private List<User> getPassengersFromBookings(List<Booking> bookings) {
-        List<User> passengers = new ArrayList<>();
+    private List<Booking> filterActiveBookings(List<Booking> bookings) {
+        List<Booking> activeBookings = new ArrayList<>();
         for (Booking booking : bookings) {
-            User passenger = profileViewModel.getUserById(booking.getPassengerId());
-            if (passenger != null) {
-                passengers.add(passenger);
-                Log.v("TripDetail", "Добавлен пассажир: " + passenger.getFullName() + " (ID: " + passenger.getId() + ")");
-            } else {
-                Log.v("TripDetail", "Пассажир с ID " + booking.getPassengerId() + " не найден");
+            if (booking.getStatus() != BookingStatus.CANCELLED) {
+                activeBookings.add(booking);
             }
         }
-        return passengers;
+        return activeBookings;
     }
 
     @SuppressLint("SetTextI18n")
-    private void updatePassengersInfo(List<Booking> bookings) {
+    private void updatePassengersInfo() {
         if (currentVehicle != null) {
-            int passengerCount = bookings.size();
+            int passengerCount = currentBookings.size();
             int maxPassengers = currentVehicle.getSeatsCount();
-
             tvPassengers.setText(passengerCount + "/" + maxPassengers + " пассажиров");
-            Log.v("TripDetail", "Обновлена информация о пассажирах: " + passengerCount + "/" + maxPassengers);
         } else {
-            tvPassengers.setText(bookings.size() + " пассажиров");
-            Log.v("TripDetail", "Транспорт не найден, только количество пассажиров: " + bookings.size());
+            tvPassengers.setText(currentBookings.size() + " пассажиров");
         }
     }
 
-    private void updateTotalPrice(List<Booking> bookings) {
+    private void updateTotalPrice() {
         double total = 0;
-        for (Booking booking : bookings) {
+        for (Booking booking : currentBookings) {
             total += booking.getPrice();
         }
         tvTotalPrice.setText(formatPrice(total));
-        Log.v("TripDetail", "Общая стоимость: " + total);
     }
 
     private void setupStatus(TripStatus status) {
@@ -278,8 +307,6 @@ public class TripDetailFragment extends Fragment {
                 tvTripStatus.setText("Неизвестно");
                 tvTripStatus.setBackgroundResource(R.drawable.bg_status_scheduled);
         }
-
-        Log.v("TripDetail", "Статус поездки установлен: " + status);
     }
 
     private void updateActionButtons(TripStatus status) {
@@ -300,8 +327,6 @@ public class TripDetailFragment extends Fragment {
                 btnCancelTrip.setVisibility(View.GONE);
                 break;
         }
-
-        Log.v("TripDetail", "Кнопки обновлены для статуса: " + status);
     }
 
     private void setupClickListeners() {
@@ -320,38 +345,24 @@ public class TripDetailFragment extends Fragment {
 
     private void startOrCompleteTrip() {
         if (currentTrip.getStatus() == TripStatus.SCHEDULED) {
-            currentTrip.setStatus(TripStatus.IN_PROGRESS);
             bookingViewModel.changeStatusTrip(currentTrip.getId(), TripStatus.IN_PROGRESS);
-            updateTripInfo(currentTrip);
-            updateActionButtons(TripStatus.IN_PROGRESS);
             showMessage("Поездка начата");
-            Log.v("TripDetail", "Поездка начата, ID: " + currentTrip.getId());
         } else if (currentTrip.getStatus() == TripStatus.IN_PROGRESS) {
-            currentTrip.setStatus(TripStatus.COMPLETED);
             bookingViewModel.changeStatusTrip(currentTrip.getId(), TripStatus.COMPLETED);
-            updateTripInfo(currentTrip);
-            updateActionButtons(TripStatus.COMPLETED);
             buttonField.setVisibility(INVISIBLE);
             showMessage("Поездка завершена");
-            Log.v("TripDetail", "Поездка завершена, ID: " + currentTrip.getId());
         }
     }
 
     private void cancelTrip() {
-        currentTrip.setStatus(TripStatus.CANCELLED);
         bookingViewModel.changeStatusTrip(currentTrip.getId(), TripStatus.CANCELLED);
 
-        List<Booking> tripBookings = getBookingsForTrip(currentTrip.getId());
-        for (Booking booking : tripBookings) {
+        // Cancel all bookings for this trip
+        for (Booking booking : currentBookings) {
             bookingViewModel.changeStatusBooking(booking.getId(), BookingStatus.CANCELLED);
-            Log.v("TripDetail", "Бронирование отменено, ID: " + booking.getId());
         }
 
-        updateTripInfo(currentTrip);
-        updateActionButtons(TripStatus.CANCELLED);
         showMessage("Поездка отменена");
-        Log.v("TripDetail", "Поездка отменена, ID: " + currentTrip.getId());
-
     }
 
     private String formatDateTime(String dateTime) {
