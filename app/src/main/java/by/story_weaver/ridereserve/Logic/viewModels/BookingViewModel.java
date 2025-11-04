@@ -50,6 +50,8 @@ public class BookingViewModel extends ViewModel {
     private final MutableLiveData<UiState<List<Vehicle>>> allVehicles = new MutableLiveData<>();
     private final MutableLiveData<UiState<Vehicle>> vehicleById = new MutableLiveData<>();
     private final MutableLiveData<UiState<User>> userById = new MutableLiveData<>();
+    private final MutableLiveData<UiState<List<User>>> passengers = new MutableLiveData<>();
+    private final MutableLiveData<UiState<List<Booking>>> filteredBookings = new MutableLiveData<>();
 
     @Inject
     public BookingViewModel(TripApiService tripApiService, BookingApiService bookingApiService,
@@ -121,7 +123,34 @@ public class BookingViewModel extends ViewModel {
             }
         });
     }
+    public void loadPassengers(long tripId){
+        passengers.postValue(UiState.loading());
+        List<User> listOfPassengers = new ArrayList<>();
+        bookingApiService.getBookingsByTrip(tripId).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<List<Booking>> call, Response<List<Booking>> response) {
+                for(Booking i: response.body()){
+                    userApiService.getUserById(i.getPassengerId()).enqueue(new Callback<>() {
+                        @Override
+                        public void onResponse(Call<User> call, Response<User> response) {
+                            listOfPassengers.add(response.body());
+                        }
 
+                        @Override
+                        public void onFailure(Call<User> call, Throwable t) {
+                        }
+                    });
+                }
+                passengers.postValue(UiState.success(listOfPassengers));
+            }
+
+            @Override
+            public void onFailure(Call<List<Booking>> call, Throwable t) {
+                passengers.postValue(UiState.error(t.getMessage()));
+            }
+        });
+
+    }
     public void loadRoutesByNumber(String number) {
         filteredRoutes.postValue(UiState.loading());
         routeApiService.searchRoutesByNumber(number).enqueue(new Callback<>() {
@@ -136,7 +165,6 @@ public class BookingViewModel extends ViewModel {
             }
         });
     }
-
     public void loadRoutesByPoints(String from, String to) {
         filteredRoutes.postValue(UiState.loading());
         routeApiService.searchRoutesByPoints(from, to).enqueue(new Callback<>() {
@@ -185,11 +213,11 @@ public class BookingViewModel extends ViewModel {
 
     public void loadDriverTrips(long driverId) {
         driverTrips.postValue(UiState.loading());
-        // Using the driver endpoint from API
         Call<List<Trip>> call = driverApiService.getDriverTrips(driverId);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<List<Trip>> call, Response<List<Trip>> response) {
+                Log.v("response", "" + response.body());
                 driverTrips.postValue(UiState.success(response.body()));
             }
 
@@ -309,7 +337,6 @@ public class BookingViewModel extends ViewModel {
 
                 if (response.isSuccessful() && response.body() != null) {
                     bookingStatusChanged.postValue(UiState.success(response.body()));
-                    // Обновляем списки
                     loadBookingsForUser();
                     loadAllBookings();
                 } else {

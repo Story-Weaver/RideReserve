@@ -104,6 +104,10 @@ public class TripServiceImpl implements TripService{
 
     @Override
     public List<Trip> getDriverTrips(long driverId) {
-        return null;
+        try {
+            return tripRepository.findByDriverId(driverId);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="entity_types">
+        <item>Пользователи</item>
+        <item>Маршруты</item>
+        <item>Поездки</item>
+        <item>Транспорт</item>
+    </string-array>
+</resources>

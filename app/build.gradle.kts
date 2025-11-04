@@ -47,6 +47,7 @@ dependencies {
 
 
     implementation(libs.recyclerview)
+    implementation(libs.google.material)
     testImplementation(libs.junit)
     implementation(libs.hilt.android)
     androidTestImplementation(libs.ext.junit)

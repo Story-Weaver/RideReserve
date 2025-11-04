@@ -2,6 +2,7 @@
 package by.story_weaver.ridereserve.repositories;
 
 import by.story_weaver.ridereserve.models.*;
+import by.story_weaver.ridereserve.models.enums.BookingStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,4 +31,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query(value = "SELECT * FROM bookings WHERE id = :id", nativeQuery = true)
     Booking getBokingById(@Param("id") long id);
+
+    int countByStatus(BookingStatus status);
 }

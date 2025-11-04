@@ -1,18 +1,20 @@
 package by.story_weaver.ridereserve.models;
 
 public class AdminStats {
-    public int totalUsers;
-    public int totalRoutes;
-    public int totalTrips;
-    public int totalBookings;
-    public int totalVehicles;
-    public int totalDrivers;
-    public int activeTrips;
-    public int scheduledTrips;
-    public int confirmedBookings;
-    public int cancelledBookings;
+    public long totalUsers;
+    public long totalRoutes;
+    public long totalTrips;
+    public long totalBookings;
+    public long totalVehicles;
+    public long totalDrivers;
+    public long activeTrips;
+    public long scheduledTrips;
+    public long confirmedBookings;
+    public long cancelledBookings;
+    
+    public AdminStats(){}
 
-    public AdminStats(int totalUsers, int totalRoutes, int totalTrips, int totalBookings, int totalVehicles, int totalDrivers, int activeTrips, int scheduledTrips, int confirmedBookings, int cancelledBookings) {
+    public AdminStats(long totalUsers, long totalRoutes, long totalTrips, long totalBookings, long totalVehicles, long totalDrivers, long activeTrips, long scheduledTrips, long confirmedBookings, long cancelledBookings) {
         this.totalUsers = totalUsers;
         this.totalRoutes = totalRoutes;
         this.totalTrips = totalTrips;
@@ -25,83 +27,83 @@ public class AdminStats {
         this.cancelledBookings = cancelledBookings;
     }
 
-    public int getTotalUsers() {
+    public long getTotalUsers() {
         return totalUsers;
     }
 
-    public void setTotalUsers(int totalUsers) {
+    public void setTotalUsers(long totalUsers) {
         this.totalUsers = totalUsers;
     }
 
-    public int getTotalRoutes() {
+    public long getTotalRoutes() {
         return totalRoutes;
     }
 
-    public void setTotalRoutes(int totalRoutes) {
+    public void setTotalRoutes(long totalRoutes) {
         this.totalRoutes = totalRoutes;
     }
 
-    public int getTotalTrips() {
+    public long getTotalTrips() {
         return totalTrips;
     }
 
-    public void setTotalTrips(int totalTrips) {
+    public void setTotalTrips(long totalTrips) {
         this.totalTrips = totalTrips;
     }
 
-    public int getTotalBookings() {
+    public long getTotalBookings() {
         return totalBookings;
     }
 
-    public void setTotalBookings(int totalBookings) {
+    public void setTotalBookings(long totalBookings) {
         this.totalBookings = totalBookings;
     }
 
-    public int getTotalVehicles() {
+    public long getTotalVehicles() {
         return totalVehicles;
     }
 
-    public void setTotalVehicles(int totalVehicles) {
+    public void setTotalVehicles(long totalVehicles) {
         this.totalVehicles = totalVehicles;
     }
 
-    public int getTotalDrivers() {
+    public long getTotalDrivers() {
         return totalDrivers;
     }
 
-    public void setTotalDrivers(int totalDrivers) {
+    public void setTotalDrivers(long totalDrivers) {
         this.totalDrivers = totalDrivers;
     }
 
-    public int getActiveTrips() {
+    public long getActiveTrips() {
         return activeTrips;
     }
 
-    public void setActiveTrips(int activeTrips) {
+    public void setActiveTrips(long activeTrips) {
         this.activeTrips = activeTrips;
     }
 
-    public int getScheduledTrips() {
+    public long getScheduledTrips() {
         return scheduledTrips;
     }
 
-    public void setScheduledTrips(int scheduledTrips) {
+    public void setScheduledTrips(long scheduledTrips) {
         this.scheduledTrips = scheduledTrips;
     }
 
-    public int getConfirmedBookings() {
+    public long getConfirmedBookings() {
         return confirmedBookings;
     }
 
-    public void setConfirmedBookings(int confirmedBookings) {
+    public void setConfirmedBookings(long confirmedBookings) {
         this.confirmedBookings = confirmedBookings;
     }
 
-    public int getCancelledBookings() {
+    public long getCancelledBookings() {
         return cancelledBookings;
     }
 
-    public void setCancelledBookings(int cancelledBookings) {
+    public void setCancelledBookings(long cancelledBookings) {
         this.cancelledBookings = cancelledBookings;
     }
 }

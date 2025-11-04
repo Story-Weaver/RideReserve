@@ -1,6 +1,7 @@
 package by.story_weaver.ridereserve.repositories;
 
 import by.story_weaver.ridereserve.models.*;
+import by.story_weaver.ridereserve.models.enums.TripStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,5 +30,8 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     @Query(value = "SELECT * FROM trips WHERE id = :id", nativeQuery = true)
     Trip getTripById(@Param("id") long id);
+
+    int countByStatus(TripStatus status);
+    List<Trip> findByStatus(TripStatus status);
 
 }

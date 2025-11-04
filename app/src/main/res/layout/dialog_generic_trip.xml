@@ -1,0 +1,25 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Время отправки">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etDepartureTime" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Время прибытия">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etArrivalTime" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Цена">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etPrice" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Сохранить"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>

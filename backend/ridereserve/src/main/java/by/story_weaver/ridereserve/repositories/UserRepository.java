@@ -1,6 +1,8 @@
 package by.story_weaver.ridereserve.repositories;
 
 import by.story_weaver.ridereserve.models.User;
+import by.story_weaver.ridereserve.models.enums.UserRole;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +23,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User getUserById(@Param("id") long id);
 
     boolean existsByEmail(String email);
+    long countByRole(UserRole role);
 }

@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -74,8 +75,28 @@ public class AdminDashboardFragment extends Fragment {
     }
 
     private void observeData() {
-        //adminViewModel.getAdminStats().observe(getViewLifecycleOwner(), this::updateStatistics);
-        //adminViewModel.getActiveTrips().observe(getViewLifecycleOwner(), this::updateTrips);
+        adminViewModel.getAdminStats().observe(getViewLifecycleOwner(), v -> {
+            switch (v.status){
+                case LOADING:
+                    break;
+                case SUCCESS:
+                    updateStatistics(v.data);
+                    break;
+                case ERROR:
+                    Toast.makeText(requireActivity(),v.message, Toast.LENGTH_SHORT).show();
+            }
+        });
+        adminViewModel.getActiveTrips().observe(getViewLifecycleOwner(), v -> {
+            switch (v.status){
+                case LOADING:
+                    break;
+                case SUCCESS:
+                    updateTrips(v.data);
+                    break;
+                case ERROR:
+                    Toast.makeText(requireActivity(),v.message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadData() {

@@ -32,6 +32,7 @@ import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.activities.AuthActivity;
 import by.story_weaver.ridereserve.ui.fragments.admin.AdminDashboardFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.BookingMonitorFragment;
+import by.story_weaver.ridereserve.ui.fragments.admin.ChangingFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverTripFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
@@ -240,7 +241,7 @@ public class MainFragment extends Fragment {
             } else if (id == R.id.menu_admin_dashboard_admin) {
                 replaceMainFragment(new AdminDashboardFragment(), "admin_dashboard");
             } else if (id == R.id.menu_edit_admin) {
-                replaceMainFragment(new ProfileFragment(), "edit_data");
+                replaceMainFragment(new ChangingFragment(), "edit_data");
             } else {
                 Log.w(TAG, "Unknown admin menu id: " + id);
                 Toast.makeText(requireContext(), "Неподдерживаемое меню", Toast.LENGTH_SHORT).show();

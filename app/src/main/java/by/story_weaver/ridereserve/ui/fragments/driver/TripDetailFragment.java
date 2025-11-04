@@ -121,6 +121,7 @@ public class TripDetailFragment extends Fragment {
         passengerAdapter = new PassengerAdapter(new ArrayList<>());
         rvPassengers.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvPassengers.setAdapter(passengerAdapter);
+        //TODO проверить правиильность загрузки пассажиров
     }
 
     private void setupObservers() {
