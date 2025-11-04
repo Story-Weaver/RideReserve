@@ -17,4 +17,5 @@ public interface TripService {
     public List<Trip> getTripsByStatus(TripStatus status);
     public List<Trip> getActiveTrips(int count);
     public List<Trip> getDriverTrips(long driverId);
+    public List<Trip> getTripsByVehicle(long vehicleId);
 }

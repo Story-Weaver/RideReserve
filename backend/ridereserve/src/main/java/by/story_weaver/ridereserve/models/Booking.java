@@ -34,6 +34,9 @@ public class Booking {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
+
     // Конструкторы
     public Booking() {}
 
@@ -69,6 +72,9 @@ public class Booking {
     
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
     
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }

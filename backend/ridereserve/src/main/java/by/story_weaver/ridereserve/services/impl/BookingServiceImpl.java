@@ -1,5 +1,6 @@
 package by.story_weaver.ridereserve.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,7 @@ import by.story_weaver.ridereserve.models.Booking;
 import by.story_weaver.ridereserve.models.enums.BookingStatus;
 import by.story_weaver.ridereserve.repositories.BookingRepository;
 import by.story_weaver.ridereserve.services.BookingService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
@@ -19,10 +21,18 @@ public class BookingServiceImpl implements BookingService{
 
     @Autowired
     private BookingRepository bookingRepository;
+
     @Override
     public List<Booking> getAllBookings() {
         try {
-            return bookingRepository.findAll();
+            List<Booking> list = bookingRepository.findAll();
+            List<Booking> finalList = new ArrayList<>();
+            for (Booking booking : list) {
+                if(!booking.getDeleted()){
+                    finalList.add(booking);
+                }
+            }
+            return finalList;
         } catch (Exception e) {
             return null;
         }
@@ -62,7 +72,11 @@ public Booking createBooking(Booking booking) {
     @Override
     public boolean deleteBooking(long bookingId) {
         try {
-            bookingRepository.deleteById(bookingId);
+            updateBookingStatus(bookingId, BookingStatus.CANCELLED);
+            Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+            booking.setDeleted(true);
+            bookingRepository.save(booking);
             return true;
         } catch (Exception e) {
             return false;
@@ -123,11 +137,11 @@ public Booking createBooking(Booking booking) {
         } catch (Exception e) {
             System.err.println("updateBookingStatus: error updating booking id=" + bookingId + " -> " + e.getMessage());
             e.printStackTrace();
-            throw e; // или return null; — я рекомендую пробрасывать, чтобы не скрывать ошибки
+            throw e;
         }
     }
 
-    // безопасный updateBooking тоже стоит поправить
+
     @Override
     public Booking updateBooking(Booking booking) {
         if (booking == null || booking.getId() == null) {

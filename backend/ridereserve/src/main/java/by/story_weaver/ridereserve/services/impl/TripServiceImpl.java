@@ -1,14 +1,19 @@
 package by.story_weaver.ridereserve.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import by.story_weaver.ridereserve.models.Booking;
 import by.story_weaver.ridereserve.models.Trip;
+import by.story_weaver.ridereserve.models.enums.BookingStatus;
 import by.story_weaver.ridereserve.models.enums.TripStatus;
 import by.story_weaver.ridereserve.repositories.TripRepository;
+import by.story_weaver.ridereserve.services.BookingService;
 import by.story_weaver.ridereserve.services.TripService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -18,10 +23,20 @@ public class TripServiceImpl implements TripService{
     @Autowired
     private TripRepository tripRepository;
 
+    @Autowired
+    private BookingService bookingService;
+
     @Override
     public List<Trip> getAllTrips() {
         try {
-            return tripRepository.findAll();
+            List<Trip> list = tripRepository.findAll();
+            List<Trip> finalList = new ArrayList<>();
+            for (Trip trip : list) {
+                if(!trip.getDeleted()){
+                    finalList.add(trip);
+                }
+            }
+            return finalList;
         } catch (Exception e) {
             return null;
         }
@@ -57,7 +72,18 @@ public class TripServiceImpl implements TripService{
     @Override
     public boolean deleteTrip(long id) {
         try {
-            tripRepository.deleteById(id);
+            List<Booking> list = bookingService.getBookingsByTrip(id);
+            if(list != null){
+                for (Booking booking : list) {
+                    bookingService.updateBookingStatus(booking.getId(), BookingStatus.CANCELLED);
+                    bookingService.deleteBooking(booking.getId());
+                }
+            }
+            updateTripStatus(id, TripStatus.CANCELLED);
+            Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Trip not found"));
+            trip.setDeleted(true);
+            tripRepository.save(trip);
             return true;
         } catch (Exception e) {
             return false;
@@ -106,6 +132,15 @@ public class TripServiceImpl implements TripService{
     public List<Trip> getDriverTrips(long driverId) {
         try {
             return tripRepository.findByDriverId(driverId);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<Trip> getTripsByVehicle(long vehicleId){
+        try {
+            return tripRepository.findByVehicleId(vehicleId);
         } catch (Exception e) {
             return null;
         }

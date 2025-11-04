@@ -23,6 +23,9 @@ public class User {
     
     @Column(name = "in_system")
     private Integer inSystem = 0;
+
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,6 +60,9 @@ public class User {
     
     public Integer getInSystem() { return inSystem; }
     public void setInSystem(Integer inSystem) { this.inSystem = inSystem; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
     
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }

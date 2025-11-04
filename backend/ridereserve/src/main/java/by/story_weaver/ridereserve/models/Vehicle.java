@@ -14,6 +14,9 @@ public class Vehicle {
     
     @Column(nullable = false)
     private String model;
+
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
     
     @Column(name = "seats_count", nullable = false)
     private Integer seatsCount;
@@ -36,6 +39,9 @@ public class Vehicle {
     
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
     
     public Integer getSeatsCount() { return seatsCount; }
     public void setSeatsCount(Integer seatsCount) { this.seatsCount = seatsCount; }

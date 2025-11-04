@@ -22,6 +22,9 @@ public class Route {
     private String stopsJson;
     
     private Double distance;
+
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
     
     private String time;
 
@@ -55,6 +58,9 @@ public class Route {
     
     public Double getDistance() { return distance; }
     public void setDistance(Double distance) { this.distance = distance; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
     
     public String getTime() { return time; }
     public void setTime(String time) { this.time = time; }

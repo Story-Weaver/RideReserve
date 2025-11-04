@@ -30,6 +30,9 @@ public class Trip {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TripStatus status = TripStatus.SCHEDULED;
+
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
     
     @Column(nullable = false)
     private BigDecimal price;
@@ -69,6 +72,9 @@ public class Trip {
     
     public TripStatus getStatus() { return status; }
     public void setStatus(TripStatus status) { this.status = status; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
     
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
