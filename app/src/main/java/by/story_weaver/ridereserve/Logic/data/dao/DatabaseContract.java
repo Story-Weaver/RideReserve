@@ -13,6 +13,7 @@ public final class DatabaseContract {
         public static final String COL_PHONE = "phone";
         public static final String COL_ROLE = "role";
         public static final String COL_IN_SYSTEM = "status";
+        public static final String COL_DELETED = "deleted";
     }
 
     public static final class Routes {
@@ -25,6 +26,7 @@ public final class DatabaseContract {
         public static final String COL_DISTANCE = "distance";
         public static final String COL_TIME = "time";
         public static final String COL_STOPS_JSON = "stops_json";
+        public static final String COL_DELETED = "deleted";
     }
 
     public static final class Vehicles {
@@ -34,6 +36,7 @@ public final class DatabaseContract {
         public static final String COL_PLATE_NUMBER = "plate_number";
         public static final String COL_MODEL = "model";
         public static final String COL_SEATS_COUNT = "seats_count";
+        public static final String COL_DELETED = "deleted";
     }
 
     public static final class Seats {
@@ -43,11 +46,11 @@ public final class DatabaseContract {
         public static final String COL_VEHICLE_ID = "vehicle_id";
         public static final String COL_SEAT_NUMBER = "seat_number";
         public static final String COL_TAG = "tag";
+        public static final String COL_DELETED = "deleted";
     }
 
     public static final class Trips {
         public static final String TABLE_NAME = "trips";
-
         public static final String COL_ID = "id";
         public static final String COL_ROUTE_ID = "route_id";
         public static final String COL_VEHICLE_ID = "vehicle_id";
@@ -56,11 +59,11 @@ public final class DatabaseContract {
         public static final String COL_ARRIVAL_TIME = "arrival_time";
         public static final String COL_STATUS = "status";
         public static final String COL_PRICE = "price";
+        public static final String COL_DELETED = "deleted";
     }
 
     public static final class Bookings {
         public static final String TABLE_NAME = "bookings";
-
         public static final String COL_ID = "id";
         public static final String COL_TRIP_ID = "trip_id";
         public static final String COL_PASSENGER_ID = "passenger_id";
@@ -69,5 +72,6 @@ public final class DatabaseContract {
         public static final String COL_HAS_PET = "has_pet";
         public static final String COL_STATUS = "status";
         public static final String COL_PRICE = "price";
+        public static final String COL_DELETED = "deleted";
     }
 }

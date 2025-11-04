@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
@@ -47,18 +48,38 @@ public class RegistrationFragment extends Fragment {
         findById(view);
         observeReg();
         reg.setOnClickListener(v -> {
-            User user = new User();
-            user.setEmail(email.getText().toString());
-            user.setPassword(pass.getText().toString());
-            user.setFullName(name.getText().toString());
-            user.setPhone(phone.getText().toString());
-            if (!email.getText().toString().isEmpty() && !pass.getText().toString().isEmpty()
-                    && !name.getText().toString().isEmpty() && !phone.getText().toString().isEmpty()) {
-                viewModel.register(user);
+            String mail = email.getText().toString().trim();
+            String password = pass.getText().toString().trim();
+            String fullName = name.getText().toString().trim();
+            String phoneNumber = phone.getText().toString().trim();
+
+            if (mail.isEmpty() || password.isEmpty() || fullName.isEmpty() || phoneNumber.isEmpty()) {
+                Toast.makeText(requireContext(), "Заполните все поля", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            if (!isValidEmail(mail)) {
+                Toast.makeText(requireContext(), "Введите корректный email", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password.length() < 6) {
+                Toast.makeText(requireContext(), "Пароль должен содержать минимум 6 символов", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            User user = new User();
+            user.setEmail(mail);
+            user.setPassword(password);
+            user.setFullName(fullName);
+            user.setPhone(phoneNumber);
+
+            viewModel.register(user);
         });
     }
-
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
     private void findById(View view){
         email = view.findViewById(R.id.regEmail);
         pass = view.findViewById(R.id.regPass);
@@ -71,7 +92,9 @@ public class RegistrationFragment extends Fragment {
         viewModel.getUserStateReg().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
+                    Toast.makeText(requireActivity(), "пытаемся", Toast.LENGTH_SHORT).show();
                 case ERROR:
+                    Toast.makeText(requireActivity(), "e" + state.message, Toast.LENGTH_SHORT).show();
                     break;
 
                 case SUCCESS:

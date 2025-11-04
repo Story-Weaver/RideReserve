@@ -11,6 +11,7 @@ public class Booking {
     private boolean hasPet;
     private BookingStatus status;
     private double price;
+    private boolean deleted = false;
 
     public Booking() {}
     public Booking(long id, long tripId, long passengerId, int seatNumber,
@@ -40,4 +41,7 @@ public class Booking {
     public void setStatus(BookingStatus status) { this.status = status; }
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
+
+    public boolean getDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

@@ -55,9 +55,14 @@ public class AuthViewModel extends ViewModel {
         authApiService.login(new EnterRequest(email, password)).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
-                userRepo.addUser(response.body());
-                userRepo.setUserInSystem(response.body().getId());//todo by email
-                UserStateEnter.postValue(UiState.success(response.body()));
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    userRepo.addUser(user);
+                    userRepo.setUserInSystem(user.getId());
+                    UserStateEnter.postValue(UiState.success(user));
+                } else {
+                    UserStateEnter.postValue(UiState.error("Ошибка авторизации"));
+                }
             }
 
             @Override
@@ -67,18 +72,19 @@ public class AuthViewModel extends ViewModel {
         });
     }
 
-    public void logout() {
-        userRepo.exit();
-    }
-
     public void register(User user) {
         UserStateReg.postValue(UiState.loading());
         authApiService.register(user).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
-                userRepo.addUser(response.body());
-                userRepo.setUserInSystem(response.body().getId());
-                UserStateReg.postValue(UiState.success(response.body()));
+                if (response.isSuccessful() && response.body() != null) {
+                    User newUser = response.body();
+                    userRepo.addUser(newUser);
+                    userRepo.setUserInSystem(newUser.getId());
+                    UserStateReg.postValue(UiState.success(newUser));
+                } else {
+                    UserStateReg.postValue(UiState.error("Ошибка регистрации"));
+                }
             }
 
             @Override
@@ -86,6 +92,10 @@ public class AuthViewModel extends ViewModel {
                 UserStateReg.postValue(UiState.error(t.getMessage()));
             }
         });
+    }
+
+    public void logout() {
+        userRepo.exit();
     }
     public void addUser(User user){
         userRepo.addUser(user);

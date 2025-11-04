@@ -67,7 +67,7 @@ public class BookingActivity extends AppCompatActivity {
     private RecyclerView recyclerRoutes, recyclerTrips;
     private TextView textRouteCard;
     private ProgressBar progressTrips;
-    private CardView cardRoutesList, cardTimeSelection, cardTripInfo, cardServices, cardPassenger, cardTotal;
+    private CardView cardRouteSelection, cardRoutesList, cardTimeSelection, cardTripInfo, cardServices, cardPassenger, cardTotal;
     private RoutesAdapter routesAdapter;
     private TripsAdapter tripsAdapter;
     private BookingViewModel bookingViewModel;
@@ -115,11 +115,8 @@ public class BookingActivity extends AppCompatActivity {
         bookingViewModel.loadAllRoutes();
         bookingViewModel.loadAllCities();
 
-        if (launchTripId != -1) {
-            bookingViewModel.loadTripById(launchTripId);
-        } else if (launchRouteId != -1) {
-            bookingViewModel.loadAllRoutes();
-        }
+        // Устанавливаем начальное состояние в зависимости от способа запуска
+        setupInitialState();
     }
 
     private void initViews() {
@@ -143,6 +140,8 @@ public class BookingActivity extends AppCompatActivity {
         recyclerTrips = findViewById(R.id.recyclerTrips);
         progressTrips = findViewById(R.id.progressTrips);
 
+        // Находим все карточки
+        cardRouteSelection = findViewById(R.id.cardRouteSelection); // Добавьте этот ID в макет
         cardRoutesList = findViewById(R.id.cardRoutesList);
         cardTimeSelection = findViewById(R.id.cardTimeSelection);
         cardTripInfo = findViewById(R.id.cardTripInfo);
@@ -150,14 +149,27 @@ public class BookingActivity extends AppCompatActivity {
         cardPassenger = findViewById(R.id.cardPassenger);
         cardTotal = findViewById(R.id.cardTotal);
 
-        tvHelperInitTotal();
-
         book = findViewById(R.id.bookButton);
     }
 
-    private void tvHelperInitTotal() {
-        // ensure tvTotalPrice exists in layout (it does in fragment layout)
-        // nothing special to do here
+    private void setupInitialState() {
+        if (launchTripId != -1) {
+            // Запуск с выбранной поездкой - скрываем выбор маршрута и времени
+            hideRouteSelection();
+            hideTimeSelection();
+            bookingViewModel.loadTripById(launchTripId);
+        } else if (launchRouteId != -1) {
+            // Запуск с выбранным маршрутом - скрываем выбор маршрута, показываем выбор времени
+            hideRouteSelection();
+            showTimeSelection();
+            bookingViewModel.loadAllRoutes(); // Для получения информации о маршруте
+            bookingViewModel.loadTripsForRoute(launchRouteId);
+        } else {
+            // Обычный запуск - показываем только выбор маршрута
+            showRouteSelection();
+            hideTimeSelection();
+            hideRemainingCards();
+        }
     }
 
     private void setupAdapters() {
@@ -195,7 +207,6 @@ public class BookingActivity extends AppCompatActivity {
             return false;
         });
 
-        // Добавьте этот обработчик для чекбокса
         CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
         cbUseMyData.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked && currentUser != null) {
@@ -215,9 +226,11 @@ public class BookingActivity extends AppCompatActivity {
                 etPhone.setEnabled(true);
                 etEmail.setEnabled(true);
 
-                etFullName.setText("");
-                etPhone.setText("");
-                etEmail.setText("");
+                if (!isChecked) {
+                    etFullName.setText("");
+                    etPhone.setText("");
+                    etEmail.setText("");
+                }
             }
         });
 
@@ -241,6 +254,7 @@ public class BookingActivity extends AppCompatActivity {
         bookingViewModel.getTripById().observe(this, state -> {
             if (state.status == UiState.Status.SUCCESS && state.data != null) {
                 currentTrip = state.data;
+                // Загружаем информацию о маршруте для отображения
                 bookingViewModel.loadAllRoutes();
                 updateTripInfo(currentTrip);
                 showRemainingCards();
@@ -250,22 +264,24 @@ public class BookingActivity extends AppCompatActivity {
         bookingViewModel.getAllRoutes().observe(this, list -> {
             if (list.status == UiState.Status.SUCCESS && list.data != null) {
                 routesAdapter.updateRoutes(list.data);
-                if (launchRouteId != -1) {
+
+                // Если запустились с routeId, находим и выбираем соответствующий маршрут
+                if (launchRouteId != -1 && currentRoute == null) {
                     for (Route r : list.data) {
                         if (r != null && r.getId() == launchRouteId) {
-                            onRouteSelected(r);
+                            currentRoute = r;
+                            updateSelectedRouteInfo(r);
                             break;
                         }
                     }
-                } else {
+                } else if (launchTripId == -1 && launchRouteId == -1) {
+                    // Обычный запуск - показываем все маршруты
                     textRouteCard.setText("Все маршруты: ");
-                    cardRoutesList.setVisibility(VISIBLE);
+                    showRoutesList();
                 }
             }
         });
-        if (launchRouteId != -1) {
-            bookingViewModel.loadTripsForRoute(launchRouteId);
-        }
+
         bookingViewModel.getFilteredRoutes().observe(this, routes -> {
             switch (routes.status) {
                 case LOADING:
@@ -278,9 +294,9 @@ public class BookingActivity extends AppCompatActivity {
                     if (routes.data != null && !routes.data.isEmpty()) {
                         routesAdapter.updateRoutes(routes.data);
                         textRouteCard.setText("Найденные маршруты: ");
-                        cardRoutesList.setVisibility(VISIBLE);
+                        showRoutesList();
                     } else {
-                        cardRoutesList.setVisibility(GONE);
+                        hideRoutesList();
                         Toast.makeText(this, "Маршруты не найдены", Toast.LENGTH_SHORT).show();
                     }
                     break;
@@ -294,17 +310,18 @@ public class BookingActivity extends AppCompatActivity {
             if (progressTrips != null) progressTrips.setVisibility(GONE);
             if (tripsState.status == UiState.Status.SUCCESS && tripsState.data != null && !tripsState.data.isEmpty()) {
                 tripsAdapter.updateTrips(tripsState.data);
-                cardTimeSelection.setVisibility(VISIBLE);
+                showTimeSelection();
                 hideRemainingCards();
             } else if (tripsState.status == UiState.Status.ERROR) {
                 Toast.makeText(this, "Ошибка загрузки рейсов: " + tripsState.message, Toast.LENGTH_SHORT).show();
+            } else if (tripsState.status == UiState.Status.SUCCESS && (tripsState.data == null || tripsState.data.isEmpty())) {
+                showNoTripsDialog();
             }
         });
 
         bookingViewModel.getIsHasBooking().observe(this, hasBookingState -> {
             if (hasBookingState.status == UiState.Status.SUCCESS && hasBookingState.data != null) {
                 if (currentTrip == null) {
-                    // race: trip was cleared or not selected — show message and re-enable button
                     Toast.makeText(this, "Состояние рейса устарело, выберите рейс снова", Toast.LENGTH_SHORT).show();
                     if (book != null) book.setEnabled(true);
                     return;
@@ -359,8 +376,35 @@ public class BookingActivity extends AppCompatActivity {
                 Toast.makeText(this, "Ошибка загрузки городов: " + state.message, Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        bookingViewModel.getAllRoutes().observe(this, ignored -> {});
+    // Новые методы управления видимостью карточек
+    private void showRouteSelection() {
+        if (cardRouteSelection != null) cardRouteSelection.setVisibility(VISIBLE);
+    }
+
+    private void hideRouteSelection() {
+        if (cardRouteSelection != null) cardRouteSelection.setVisibility(GONE);
+    }
+
+    private void showRoutesList() {
+        if (cardRoutesList != null) cardRoutesList.setVisibility(VISIBLE);
+    }
+
+    private void hideRoutesList() {
+        if (cardRoutesList != null) cardRoutesList.setVisibility(GONE);
+    }
+
+    private void showTimeSelection() {
+        if (cardTimeSelection != null) cardTimeSelection.setVisibility(VISIBLE);
+        // Показываем кнопку возврата к маршрутам только если не запустились с routeId
+        if (btnBackToRoutes != null) {
+            btnBackToRoutes.setVisibility(launchRouteId == -1 ? VISIBLE : GONE);
+        }
+    }
+
+    private void hideTimeSelection() {
+        if (cardTimeSelection != null) cardTimeSelection.setVisibility(GONE);
     }
 
     private void loadCurrentUser() {
@@ -393,24 +437,39 @@ public class BookingActivity extends AppCompatActivity {
         currentRoute = route;
         progressTrips.setVisibility(VISIBLE);
         bookingViewModel.loadTripsForRoute(route.getId());
-        cardRoutesList.setVisibility(GONE);
+        hideRouteSelection();
+        hideRoutesList();
     }
 
     private void onTripSelected(Trip trip) {
         if (trip == null) return;
         currentTrip = trip;
         updateTripInfo(trip);
+        hideTimeSelection();
         showRemainingCards();
     }
 
+    private void updateSelectedRouteInfo(Route route) {
+        TextView tvSelectedRoute = findViewById(R.id.tvSelectedRoute);
+        if (tvSelectedRoute != null && route != null) {
+            String origin = route.getOrigin() != null ? route.getOrigin() : "";
+            String destination = route.getDestination() != null ? route.getDestination() : "";
+            tvSelectedRoute.setText("Маршрут: " + origin + " - " + destination);
+        }
+    }
+
     private void updateTripInfo(Trip trip) {
-        if (trip == null || currentRoute == null) return;
-        findViewById(R.id.tvRouteInfo).setVisibility(VISIBLE);
-        String origin = currentRoute.getOrigin() != null ? currentRoute.getOrigin() : "";
-        String destination = currentRoute.getDestination() != null ? currentRoute.getDestination() : "";
-        ((android.widget.TextView) findViewById(R.id.tvRouteInfo)).setText(origin + " - " + destination);
-        ((android.widget.TextView) findViewById(R.id.tvDepartureTime)).setText(formatDateTime(trip.getDepartureTime()));
-        ((android.widget.TextView) findViewById(R.id.tvTripPrice)).setText(String.format("%.2f BYN", trip.getPrice()));
+        if (trip == null) return;
+
+        // Обновляем информацию о маршруте
+        if (currentRoute != null) {
+            String origin = currentRoute.getOrigin() != null ? currentRoute.getOrigin() : "";
+            String destination = currentRoute.getDestination() != null ? currentRoute.getDestination() : "";
+            ((TextView) findViewById(R.id.tvRouteInfo)).setText(origin + " - " + destination);
+        }
+
+        ((TextView) findViewById(R.id.tvDepartureTime)).setText(formatDateTime(trip.getDepartureTime()));
+        ((TextView) findViewById(R.id.tvTripPrice)).setText(String.format("%.2f BYN", trip.getPrice()));
         updateTotalPrice();
     }
 
@@ -433,16 +492,25 @@ public class BookingActivity extends AppCompatActivity {
     private void returnToRouteSelection() {
         currentRoute = null;
         currentTrip = null;
-        cardRoutesList.setVisibility(VISIBLE);
-        cardTimeSelection.setVisibility(GONE);
+        showRouteSelection();
+        showRoutesList();
+        hideTimeSelection();
         hideRemainingCards();
         tripsAdapter.updateTrips(new ArrayList<>());
+
+        // Сбрасываем выбранный маршрут при возврате
+        launchRouteId = -1;
     }
 
     private void returnToTripSelection() {
         currentTrip = null;
-        cardTimeSelection.setVisibility(VISIBLE);
+        showTimeSelection();
         hideRemainingCards();
+
+        // Обновляем информацию о выбранном маршруте
+        if (currentRoute != null) {
+            updateSelectedRouteInfo(currentRoute);
+        }
     }
 
     private void updateTotalPrice() {
@@ -450,7 +518,7 @@ public class BookingActivity extends AppCompatActivity {
         totalPrice = currentTrip.getPrice();
         if (isPet) totalPrice += petPrice;
         if (isChild) totalPrice += childPrice;
-        ((android.widget.TextView) findViewById(R.id.tvTotalPrice)).setText(String.format("%.2f BYN", totalPrice));
+        ((TextView) findViewById(R.id.tvTotalPrice)).setText(String.format("%.2f BYN", totalPrice));
     }
 
     private String formatDateTime(String dateTime) {
@@ -499,7 +567,7 @@ public class BookingActivity extends AppCompatActivity {
         book.setEnabled(false);
 
         long passengerId;
-        if (!((android.widget.CheckBox) findViewById(R.id.cbUseMyData)).isChecked()) {
+        if (!((CheckBox) findViewById(R.id.cbUseMyData)).isChecked()) {
             String name = Objects.requireNonNull(etFullName.getText()).toString();
             String phone = Objects.requireNonNull(etPhone.getText()).toString();
             String email = Objects.requireNonNull(etEmail.getText()).toString();
@@ -537,7 +605,7 @@ public class BookingActivity extends AppCompatActivity {
         }
 
         long passengerId;
-        if (!((android.widget.CheckBox) findViewById(R.id.cbUseMyData)).isChecked()) {
+        if (!((CheckBox) findViewById(R.id.cbUseMyData)).isChecked()) {
             String email = Objects.requireNonNull(etEmail.getText()).toString();
             passengerId = profileViewModel.getIdByEmail(email);
         } else {
@@ -550,8 +618,8 @@ public class BookingActivity extends AppCompatActivity {
         }
 
         double price = currentTrip.getPrice();
-        boolean pet = ((android.widget.CheckBox) findViewById(R.id.cbPet)).isChecked();
-        boolean child = ((android.widget.CheckBox) findViewById(R.id.cbChildSeat)).isChecked();
+        boolean pet = ((CheckBox) findViewById(R.id.cbPet)).isChecked();
+        boolean child = ((CheckBox) findViewById(R.id.cbChildSeat)).isChecked();
         if (pet) price += petPrice;
         if (child) price += childPrice;
 

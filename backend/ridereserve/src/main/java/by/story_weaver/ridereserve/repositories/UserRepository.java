@@ -21,7 +21,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = "SELECT * FROM users WHERE id = :id", nativeQuery = true)
     User getUserById(@Param("id") long id);
-
-    boolean existsByEmail(String email);
+    
+    @Query(value = "SELECT * FROM users WHERE email = :email", nativeQuery = true)
+    User existsByEmail(String email);
     long countByRole(UserRole role);
 }

@@ -1,6 +1,7 @@
 package by.story_weaver.ridereserve.ui.fragments.admin;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @AndroidEntryPoint
@@ -87,7 +90,8 @@ public class BookingMonitorFragment extends Fragment {
                 "Все статусы",
                 "Ожидает подтверждения",
                 "Подтверждено",
-                "Отменено"
+                "Отменено",
+                "Завершено"
         );
 
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
@@ -158,7 +162,7 @@ public class BookingMonitorFragment extends Fragment {
 
             switch (result.status) {
                 case SUCCESS:
-                    if(messageShowed){
+                    if(!messageShowed){
                         Toast.makeText(requireActivity(), "Статус бронирования обновлен",
                                 Toast.LENGTH_SHORT).show();
                         messageShowed = true;
@@ -167,7 +171,7 @@ public class BookingMonitorFragment extends Fragment {
                     break;
 
                 case ERROR:
-                    if(messageShowed) {
+                    if(!messageShowed) {
                         Toast.makeText(requireActivity(), "Ошибка: " + result.message,
                                 Toast.LENGTH_SHORT).show();
                         messageShowed = true;
@@ -175,6 +179,7 @@ public class BookingMonitorFragment extends Fragment {
                     break;
                 case LOADING:
                     messageShowed = false;
+                    break;
             }
         });
     }
@@ -187,16 +192,53 @@ public class BookingMonitorFragment extends Fragment {
         String searchQuery = etSearchBooking.getText().toString().trim();
         String selectedStatus = spinnerStatusFilter.getSelectedItem().toString();
 
+        Log.d("BookingMonitor", "Applying filters - Status: " + selectedStatus + ", Search: " + searchQuery);
+        Log.d("BookingMonitor", "Total bookings before filter: " + allBookings.size());
+
         List<Booking> filtered = new ArrayList<>(allBookings);
 
+        // Фильтрация по статусу
         if (!selectedStatus.equals("Все статусы")) {
             BookingStatus status = mapStatusFilter(selectedStatus);
-            filtered.removeIf(booking -> booking.getStatus() != status);
+            Log.d("BookingMonitor", "Filtering by status: " + status);
+            filtered.removeIf(booking -> {
+                boolean shouldRemove = booking.getStatus() != status;
+                if (shouldRemove) {
+                    Log.d("BookingMonitor", "Removing booking #" + booking.getId() + " with status: " + booking.getStatus());
+                }
+                return shouldRemove;
+            });
+        } else {
+            Log.d("BookingMonitor", "Showing all statuses");
         }
 
         if (!searchQuery.isEmpty()) {
-            filtered.removeIf(booking ->
-                    !String.valueOf(booking.getId()).contains(searchQuery));
+            Log.d("BookingMonitor", "Filtering by search: " + searchQuery);
+            filtered.removeIf(booking -> {
+                boolean matchesId = String.valueOf(booking.getId()).contains(searchQuery);
+                boolean matchesPassenger = String.valueOf(booking.getPassengerId()).contains(searchQuery);
+                boolean shouldRemove = !(matchesId || matchesPassenger);
+
+                if (shouldRemove) {
+                    Log.d("BookingMonitor", "Removing booking #" + booking.getId() + " - no match for search");
+                }
+                return shouldRemove;
+            });
+        }
+
+        Log.d("BookingMonitor", "Bookings after filters: " + filtered.size());
+
+        // СОРТИРОВКА по статусу: PENDING -> CONFIRMED -> CANCELLED
+        Collections.sort(filtered, new Comparator<Booking>() {
+            @Override
+            public int compare(Booking b1, Booking b2) {
+                return getStatusPriority(b1.getStatus()) - getStatusPriority(b2.getStatus());
+            }
+        });
+
+        // Отладочная информация о статусах после фильтрации
+        for (Booking booking : filtered) {
+            Log.d("BookingMonitor", "Final booking #" + booking.getId() + " - Status: " + booking.getStatus());
         }
 
         bookingAdapter.submitList(filtered);
@@ -204,9 +246,24 @@ public class BookingMonitorFragment extends Fragment {
         if (filtered.isEmpty()) {
             rvBookings.setVisibility(View.GONE);
             tvEmptyList.setVisibility(View.VISIBLE);
+            tvEmptyList.setText("Бронирования не найдены");
+            Log.d("BookingMonitor", "No bookings to display");
         } else {
             rvBookings.setVisibility(View.VISIBLE);
             tvEmptyList.setVisibility(View.GONE);
+            Log.d("BookingMonitor", "Displaying " + filtered.size() + " bookings");
+        }
+    }
+
+    private int getStatusPriority(BookingStatus status) {
+        if (status == null) return 4;
+
+        switch (status) {
+            case PENDING: return 1;
+            case CONFIRMED: return 2;
+            case CANCELLED: return 3;
+            case COMPLETED: return 4; // Добавляем поддержку COMPLETED
+            default: return 5;
         }
     }
 
@@ -217,6 +274,7 @@ public class BookingMonitorFragment extends Fragment {
     }
 
     private BookingStatus mapStatusFilter(String statusFilter) {
+        Log.d("BookingMonitor", "Mapping status filter: " + statusFilter);
         switch (statusFilter) {
             case "Ожидает подтверждения":
                 return BookingStatus.PENDING;
@@ -224,7 +282,10 @@ public class BookingMonitorFragment extends Fragment {
                 return BookingStatus.CONFIRMED;
             case "Отменено":
                 return BookingStatus.CANCELLED;
+            case "Завершено":
+                return BookingStatus.COMPLETED;
             default:
+                Log.w("BookingMonitor", "Unknown status filter: " + statusFilter);
                 return null;
         }
     }
@@ -254,9 +315,17 @@ public class BookingMonitorFragment extends Fragment {
 
     private void showLoading(boolean show) {
         progressBookings.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (show) {
+            rvBookings.setVisibility(View.GONE);
+            tvEmptyList.setVisibility(View.GONE);
+        } else {
+            rvBookings.setVisibility(View.VISIBLE);
+        }
     }
 
     private void showBookingDetails(long bookingId) {
-        //mainViewModel.openFullscreen(BookingDetailFragment);
+        // mainViewModel.openFullscreen(BookingDetailFragment);
+        Toast.makeText(requireContext(), "Детали бронирования #" + bookingId,
+                Toast.LENGTH_SHORT).show();
     }
 }

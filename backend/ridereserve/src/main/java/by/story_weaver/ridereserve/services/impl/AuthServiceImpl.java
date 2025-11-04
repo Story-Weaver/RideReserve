@@ -17,32 +17,57 @@ public class AuthServiceImpl implements AuthService{
     private UserRepository userRepository;
 
     @Override
-    public User login(EnterRequest request) {
-        try {
-            String email = request.getEmail();
-            String pass = request.getPassword();
-            User user = userRepository.findByEmail(email);
-            if(user.getPassword().equals(pass)){
-                return user;
-            } else{
-                return null;
-            }
-        } catch (Exception e) {
+public User login(EnterRequest request) {
+    try {
+        String email = request.getEmail();
+        String password = request.getPassword();
+        
+        if (email == null || email.trim().isEmpty()) {
+            System.out.println("Email is empty");
             return null;
         }
+        
+        if (password == null) {
+            System.out.println("Password is null");
+            return null;
+        }
+        
+        User user = userRepository.findByEmail(email);
+        
+        if (user == null) {
+            System.out.println("User not found with email: " + email);
+            return null;
+        }
+        
+        if (user.getPassword().equals(password)) {
+            return user;
+        } else {
+            System.out.println("Invalid password for user: " + email);
+            return null;
+        }
+        
+    } catch (Exception e) {
+        System.out.println("Login error: " + e.getMessage());
+        e.printStackTrace();
+        return null;
     }
+}
 
     @Override
     public User register(User user) {
-        try {
-            if(userRepository.existsByEmail(user.getEmail())){
-                return null;
-            } else {
-                return userRepository.save(user);
-            }
-        } catch (Exception e) {
+    try {
+        User existingUser = userRepository.existsByEmail(user.getEmail());
+        if (existingUser != null) {
             return null;
         }
+        user.setId(null);
+        
+        return userRepository.save(user);
+    } catch (Exception e) {
+        System.out.println("Error during registration: " + e.getMessage());
+        e.printStackTrace();
+        return null;
     }
+}
     
 }

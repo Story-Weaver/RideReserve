@@ -151,7 +151,6 @@ public class ChangingFragment extends Fragment {
     }
 
     private void setupObservers() {
-        //TODO обсерв удаления
         viewModel.getUsers().observe(getViewLifecycleOwner(), usersState -> {
             if (usersState != null) {
                 switch (usersState.status) {
@@ -175,7 +174,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за маршрутами
         viewModel.getRoutes().observe(getViewLifecycleOwner(), routesState -> {
             if (routesState != null) {
                 switch (routesState.status) {
@@ -199,7 +197,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за поездками
         viewModel.getTrips().observe(getViewLifecycleOwner(), tripsState -> {
             if (tripsState != null) {
                 switch (tripsState.status) {
@@ -223,7 +220,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за транспортом
         viewModel.getVehicles().observe(getViewLifecycleOwner(), vehiclesState -> {
             if (vehiclesState != null) {
                 switch (vehiclesState.status) {
@@ -247,7 +243,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за результатами операций с пользователями
         viewModel.getUserOperation().observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
                 switch (result.status) {
@@ -261,7 +256,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за результатами операций с маршрутами
         viewModel.getRouteOperation().observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
                 switch (result.status) {
@@ -275,7 +269,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за результатами операций с поездками
         viewModel.getTripOperation().observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
                 switch (result.status) {
@@ -289,7 +282,6 @@ public class ChangingFragment extends Fragment {
             }
         });
 
-        // Наблюдаем за результатами операций с транспортом
         viewModel.getVehicleOperation().observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
                 switch (result.status) {
@@ -397,10 +389,24 @@ public class ChangingFragment extends Fragment {
         }
     }
     private void handleTripDelete(Trip trip) {
-        viewModel.deleteTrip(trip.getId());
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Удаление поездки")
+                .setMessage("Будут отменены все брони на эту поездку. Продолжить?")
+                .setPositiveButton("Да", (dialog, which) -> {
+                    viewModel.deleteTrip(trip.getId());
+                })
+                .setNegativeButton("Нет", null)
+                .show();
     }
     private void handleVehicleDelete(Vehicle vehicle) {
-        viewModel.deleteVehicle(vehicle.getId());
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Удаление поездки")
+                .setMessage("Будут отменены все поездки и брони для этого транспорта. Продолжить?")
+                .setPositiveButton("Да", (dialog, which) -> {
+                    viewModel.deleteVehicle(vehicle.getId());
+                })
+                .setNegativeButton("Нет", null)
+                .show();
     }
 
     private void handlePromoteToDriver(Object obj) {

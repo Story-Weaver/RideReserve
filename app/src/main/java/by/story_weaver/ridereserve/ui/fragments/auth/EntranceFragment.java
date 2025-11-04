@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.R;
@@ -47,14 +48,26 @@ public class EntranceFragment extends Fragment {
         findById(view);
         observeLogin();
         enter.setOnClickListener(v -> {
-            String mail = email.getText().toString();
-            String password = pass.getText().toString();
-            if (!mail.isEmpty() && !password.isEmpty()) {
-                viewModel.login(mail, password);
-            }
-        });
-    }
+            String mail = email.getText().toString().trim();
+            String password = pass.getText().toString().trim();
 
+            if (mail.isEmpty() || password.isEmpty()) {
+                Toast.makeText(requireContext(), "Заполните все поля", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!isValidEmail(mail)) {
+                Toast.makeText(requireContext(), "Введите корректный email", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            viewModel.login(mail, password);
+        });
+
+    }
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
     private void findById(View view){
         email = view.findViewById(R.id.enterEmail);
         pass = view.findViewById(R.id.enterPass);
@@ -64,7 +77,9 @@ public class EntranceFragment extends Fragment {
         viewModel.getUserStateEnter().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
+                    Toast.makeText(requireActivity(), "пытаемся", Toast.LENGTH_SHORT).show();
                 case ERROR:
+                    Toast.makeText(requireActivity(), "" + state.message, Toast.LENGTH_SHORT).show();
                     break;
 
                 case SUCCESS:

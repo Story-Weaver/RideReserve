@@ -110,16 +110,15 @@ public class RouteServiceImpl implements RouteService{
             Set<String> cities = new HashSet<>();
             if (origins != null) cities.addAll(origins);
             if (destinations != null) cities.addAll(destinations);
-            // Сортировка (по желанию)
             List<String> sorted = new ArrayList<>(cities);
             sorted.sort(String::compareTo);
             return sorted;
         } catch (Exception e) {
-            // лог (не глушим)
             e.printStackTrace();
             return List.of();
         }
     }
+    
 
     @Override
     public List<Route> searchRoutesByNumber(String text) {

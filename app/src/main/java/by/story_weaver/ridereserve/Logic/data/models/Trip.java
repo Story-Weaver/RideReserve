@@ -11,6 +11,7 @@ public class Trip {
     private String arrivalTime; //время отправки
     private TripStatus status;
     private double price;
+    private boolean deleted = false;
 
 
     public Trip() {}
@@ -46,4 +47,6 @@ public class Trip {
     public void setPrice(double price) {
         this.price = price;
     }
+    public boolean getDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

@@ -5,6 +5,7 @@ public class Vehicle {
     private String plateNumber;
     private String model;
     private int seatsCount;
+    private boolean deleted = false;
 
     public Vehicle() {}
     public Vehicle(long id, String plateNumber, String model, int seatsCount){
@@ -20,4 +21,6 @@ public class Vehicle {
     public void setModel(String model) { this.model = model; }
     public int getSeatsCount() { return seatsCount; }
     public void setSeatsCount(int seatsCount) { this.seatsCount = seatsCount; }
+    public boolean getDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

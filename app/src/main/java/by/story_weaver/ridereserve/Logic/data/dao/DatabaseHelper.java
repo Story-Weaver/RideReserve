@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "taxi_app.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2; // Увеличиваем версию для добавления поля deleted
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // users
+        // users table with deleted field
         db.execSQL("CREATE TABLE " + DatabaseContract.Users.TABLE_NAME + " (" +
                 DatabaseContract.Users.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Users.COL_EMAIL + " TEXT UNIQUE NOT NULL, " +
@@ -28,10 +28,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Users.COL_FULL_NAME + " TEXT, " +
                 DatabaseContract.Users.COL_PHONE + " TEXT, " +
                 DatabaseContract.Users.COL_ROLE + " TEXT NOT NULL, " +
-                DatabaseContract.Users.COL_IN_SYSTEM + " INTEGER" +
+                DatabaseContract.Users.COL_IN_SYSTEM + " INTEGER DEFAULT 0, " +
+                DatabaseContract.Users.COL_DELETED + " INTEGER DEFAULT 0" +
                 ");");
 
-        // routes
+        // routes table with deleted field
         db.execSQL("CREATE TABLE " + DatabaseContract.Routes.TABLE_NAME + " (" +
                 DatabaseContract.Routes.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Routes.COL_NAME + " TEXT, " +
@@ -39,18 +40,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Routes.COL_DESTINATION + " TEXT, " +
                 DatabaseContract.Routes.COL_DISTANCE + " DECIMAL, " +
                 DatabaseContract.Routes.COL_TIME + " TEXT, " +
-                DatabaseContract.Routes.COL_STOPS_JSON + " TEXT" +
+                DatabaseContract.Routes.COL_STOPS_JSON + " TEXT, " +
+                DatabaseContract.Routes.COL_DELETED + " INTEGER DEFAULT 0" +
                 ");");
 
-        // vehicles
+        // vehicles table with deleted field
         db.execSQL("CREATE TABLE " + DatabaseContract.Vehicles.TABLE_NAME + " (" +
                 DatabaseContract.Vehicles.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Vehicles.COL_PLATE_NUMBER + " TEXT UNIQUE, " +
                 DatabaseContract.Vehicles.COL_MODEL + " TEXT, " +
-                DatabaseContract.Vehicles.COL_SEATS_COUNT + " INTEGER" +
+                DatabaseContract.Vehicles.COL_SEATS_COUNT + " INTEGER, " +
+                DatabaseContract.Vehicles.COL_DELETED + " INTEGER DEFAULT 0" +
                 ");");
 
-        // seats
+        // seats table
         db.execSQL("CREATE TABLE " + DatabaseContract.Seats.TABLE_NAME + " (" +
                 DatabaseContract.Seats.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Seats.COL_VEHICLE_ID + " INTEGER NOT NULL, " +
@@ -61,7 +64,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Vehicles.TABLE_NAME + "(" + DatabaseContract.Vehicles.COL_ID + ") ON DELETE CASCADE" +
                 ");");
 
-        // trips
+        // trips table with deleted field
         db.execSQL("CREATE TABLE " + DatabaseContract.Trips.TABLE_NAME + " (" +
                 DatabaseContract.Trips.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Trips.COL_ROUTE_ID + " INTEGER NOT NULL, " +
@@ -70,7 +73,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Trips.COL_DEPARTURE_TIME + " TEXT, " +
                 DatabaseContract.Trips.COL_ARRIVAL_TIME + " TEXT, " +
                 DatabaseContract.Trips.COL_STATUS + " TEXT, " +
-                DatabaseContract.Bookings.COL_PRICE + " DECIMAL, " +
+                DatabaseContract.Trips.COL_PRICE + " DECIMAL, " +
+                DatabaseContract.Trips.COL_DELETED + " INTEGER DEFAULT 0, " +
                 "FOREIGN KEY(" + DatabaseContract.Trips.COL_ROUTE_ID + ") REFERENCES " +
                 DatabaseContract.Routes.TABLE_NAME + "(" + DatabaseContract.Routes.COL_ID + ") ON DELETE CASCADE, " +
                 "FOREIGN KEY(" + DatabaseContract.Trips.COL_VEHICLE_ID + ") REFERENCES " +
@@ -79,7 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Users.TABLE_NAME + "(" + DatabaseContract.Users.COL_ID + ") ON DELETE SET NULL" +
                 ");");
 
-        // bookings
+        // bookings table with deleted field
         db.execSQL("CREATE TABLE " + DatabaseContract.Bookings.TABLE_NAME + " (" +
                 DatabaseContract.Bookings.COL_ID + " INTEGER PRIMARY KEY, " +
                 DatabaseContract.Bookings.COL_TRIP_ID + " INTEGER NOT NULL, " +
@@ -89,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.Bookings.COL_HAS_PET + " INTEGER DEFAULT 0, " +
                 DatabaseContract.Bookings.COL_STATUS + " TEXT NOT NULL, " +
                 DatabaseContract.Bookings.COL_PRICE + " DECIMAL, " +
+                DatabaseContract.Bookings.COL_DELETED + " INTEGER DEFAULT 0, " +
                 "FOREIGN KEY(" + DatabaseContract.Bookings.COL_TRIP_ID + ") REFERENCES " +
                 DatabaseContract.Trips.TABLE_NAME + "(" + DatabaseContract.Trips.COL_ID + ") ON DELETE CASCADE, " +
                 "FOREIGN KEY(" + DatabaseContract.Bookings.COL_PASSENGER_ID + ") REFERENCES " +
@@ -98,14 +103,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // простая стратегия миграции (для разработки)
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Bookings.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Trips.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Seats.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Vehicles.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Routes.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DatabaseContract.Users.TABLE_NAME);
-        onCreate(db);
+        // Миграция с версии 1 на 2 - добавляем поля deleted
+        if (oldVersion < 2) {
+            // Добавляем поле deleted в users
+            db.execSQL("ALTER TABLE " + DatabaseContract.Users.TABLE_NAME +
+                    " ADD COLUMN " + DatabaseContract.Users.COL_DELETED + " INTEGER DEFAULT 0");
+
+            // Добавляем поле deleted в routes
+            db.execSQL("ALTER TABLE " + DatabaseContract.Routes.TABLE_NAME +
+                    " ADD COLUMN " + DatabaseContract.Routes.COL_DELETED + " INTEGER DEFAULT 0");
+
+            // Добавляем поле deleted в vehicles
+            db.execSQL("ALTER TABLE " + DatabaseContract.Vehicles.TABLE_NAME +
+                    " ADD COLUMN " + DatabaseContract.Vehicles.COL_DELETED + " INTEGER DEFAULT 0");
+
+            // Добавляем поле deleted в trips
+            db.execSQL("ALTER TABLE " + DatabaseContract.Trips.TABLE_NAME +
+                    " ADD COLUMN " + DatabaseContract.Trips.COL_DELETED + " INTEGER DEFAULT 0");
+
+            // Добавляем поле deleted в bookings
+            db.execSQL("ALTER TABLE " + DatabaseContract.Bookings.TABLE_NAME +
+                    " ADD COLUMN " + DatabaseContract.Bookings.COL_DELETED + " INTEGER DEFAULT 0");
+        }
+
+        // Для будущих версий можно добавить дополнительные условия миграции
+        if (oldVersion < 3) {
+            // Миграция для будущей версии 3
+        }
     }
 }
-

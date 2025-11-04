@@ -7,6 +7,7 @@ public class Route {
     private String destination; // докуда
     private String stopsJson;   // опционально: JSON массив остановок
     private double distance;
+    private boolean deleted = false;
     private String time;
 
     public Route() {}
@@ -38,4 +39,6 @@ public class Route {
     }
     public String getStopsJson() { return stopsJson; }
     public void setStopsJson(String stopsJson) { this.stopsJson = stopsJson; }
+    public boolean getDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

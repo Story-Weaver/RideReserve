@@ -227,14 +227,13 @@ public class AdminViewModel extends ViewModel {
         });
     }
     public void deleteUser(long id) {
-        //TODO поменять слушатель на delete слушатель
         userOperation.postValue(UiState.loading());
         adminApiService.deleteUser(id).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     userOperation.postValue(UiState.success(null));
-                    loadAllUsers(); // Обновляем список
+                    loadAllUsers();
                 } else {
                     userOperation.postValue(UiState.error("Ошибка удаления пользователя: " + response.code()));
                 }

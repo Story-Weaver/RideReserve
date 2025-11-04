@@ -10,6 +10,7 @@ public class User {
     private String phone;
     private int inSystem;
     private UserRole role;
+    private boolean deleted = false;
 
     public User() {}
 
@@ -39,4 +40,6 @@ public class User {
     public void setInSystem(int inSystem) {
         this.inSystem = inSystem;
     }
+    public boolean getDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }
