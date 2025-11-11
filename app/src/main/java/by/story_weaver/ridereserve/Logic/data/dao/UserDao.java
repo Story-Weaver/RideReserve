@@ -57,18 +57,30 @@ public class UserDao {
         return null;
     }
 
-    public void exit(){
-        String checkQuery = "SELECT * FROM " + DatabaseContract.Users.TABLE_NAME +
-                " WHERE " + DatabaseContract.Users.COL_IN_SYSTEM + " = 1";
-        Cursor cursor = db.rawQuery(checkQuery, null);
-        try (cursor) {
-            if (cursor != null && cursor.moveToFirst()) {
-                ContentValues resetValues = new ContentValues();
-                resetValues.put(DatabaseContract.Users.COL_IN_SYSTEM, 0);
-                db.update(DatabaseContract.Users.TABLE_NAME, resetValues, null, null);
+    public boolean exit() {
+        try {
+            String checkQuery = "SELECT * FROM " + DatabaseContract.Users.TABLE_NAME +
+                    " WHERE " + DatabaseContract.Users.COL_IN_SYSTEM + " = 1";
+            Cursor cursor = db.rawQuery(checkQuery, null);
+
+            if (cursor != null) {
+                try {
+                    if (cursor.moveToFirst()) {
+                        ContentValues resetValues = new ContentValues();
+                        resetValues.put(DatabaseContract.Users.COL_IN_SYSTEM, 0);
+                        int updatedRows = db.update(DatabaseContract.Users.TABLE_NAME, resetValues, null, null);
+                        return updatedRows > 0; // Возвращаем true если были обновленные строки
+                    } else {
+                        return true; // Нет пользователей в системе - считаем успехом
+                    }
+                } finally {
+                    cursor.close();
+                }
             }
+            return false; // Ошибка курсора
         } catch (Exception e) {
             e.printStackTrace();
+            return false; // Ошибка операции
         }
     }
 

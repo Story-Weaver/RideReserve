@@ -92,9 +92,8 @@ public class RegistrationFragment extends Fragment {
         viewModel.getUserStateReg().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
-                    Toast.makeText(requireActivity(), "пытаемся", Toast.LENGTH_SHORT).show();
                 case ERROR:
-                    Toast.makeText(requireActivity(), "e" + state.message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity(), "" + state.message, Toast.LENGTH_SHORT).show();
                     break;
 
                 case SUCCESS:

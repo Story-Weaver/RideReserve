@@ -14,6 +14,9 @@ import by.story_weaver.ridereserve.services.TripService;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/trips")
@@ -92,6 +95,16 @@ public ResponseEntity<Trip> createTrip(@RequestBody Trip trip) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
+
+@GetMapping("/passangers")
+public ResponseEntity<?> getPassangers() {
+    try {
+        return null;
+    } catch (Exception e) {
+        return ResponseEntity.internalServerError().build();
+    }
+}
+
 
 @PutMapping("/")
 public ResponseEntity<Trip> updateTrip(@RequestBody Trip trip) {

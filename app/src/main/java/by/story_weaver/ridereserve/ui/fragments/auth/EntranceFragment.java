@@ -77,7 +77,6 @@ public class EntranceFragment extends Fragment {
         viewModel.getUserStateEnter().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
-                    Toast.makeText(requireActivity(), "пытаемся", Toast.LENGTH_SHORT).show();
                 case ERROR:
                     Toast.makeText(requireActivity(), "" + state.message, Toast.LENGTH_SHORT).show();
                     break;

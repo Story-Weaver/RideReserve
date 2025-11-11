@@ -24,6 +24,7 @@ public class AuthViewModel extends ViewModel {
     private final AuthApiService authApiService;
     private final MutableLiveData<UiState<User>> UserStateReg = new MutableLiveData<>();
     private final MutableLiveData<UiState<User>> UserStateEnter = new MutableLiveData<>();
+    private final MutableLiveData<UiState<Boolean>> logOut = new MutableLiveData<>();
 
     @Inject
     public AuthViewModel(UserRepository userRepo, AuthApiService authApiService) {
@@ -33,6 +34,7 @@ public class AuthViewModel extends ViewModel {
 
     public LiveData<UiState<User>> getUserStateEnter() { return UserStateEnter; }
     public LiveData<UiState<User>> getUserStateReg() { return UserStateReg; }
+    public LiveData<UiState<Boolean>> getLogOut() { return logOut; }
 
     public long checkSignedIn() {
         long id = userRepo.getUserInSystem();
@@ -95,7 +97,12 @@ public class AuthViewModel extends ViewModel {
     }
 
     public void logout() {
-        userRepo.exit();
+        logOut.postValue(UiState.loading());
+        if(userRepo.exit()){
+            logOut.postValue(UiState.success(true));
+        } else {
+            logOut.postValue(UiState.error(""));
+        }
     }
     public void addUser(User user){
         userRepo.addUser(user);

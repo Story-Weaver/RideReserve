@@ -60,6 +60,7 @@ public class TripDetailFragment extends Fragment {
     private PassengerAdapter passengerAdapter;
     private List<Booking> currentBookings = new ArrayList<>();
     private List<User> currentPassengers = new ArrayList<>();
+    private int count= 0;
 
     public static TripDetailFragment newInstance(long tripId) {
         TripDetailFragment fragment = new TripDetailFragment();

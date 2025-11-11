@@ -160,6 +160,17 @@ public class MainFragment extends Fragment {
             Log.w(TAG, "bottomNavigationView is null in setupForRole");
             return;
         }
+//TODO проверка интернета
+//TODO лого проги
+//TODO детали брони у админа
+//TODO при создании сущностей добавить поля на ключи связей
+//TODO проверить, есть ли номер водителя
+//TODO функция на бек для листа пассажиров
+
+//TODO экран авторизации +
+//TODO почистить логи на авторизации +
+//TODO выход из админа +
+//TODO добабить цифру пассажиров село/всего + уже было
 
         switch (role) {
             case DRIVER:

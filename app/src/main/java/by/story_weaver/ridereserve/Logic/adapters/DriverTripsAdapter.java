@@ -109,7 +109,7 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
     public class TripViewHolder extends RecyclerView.ViewHolder {
 
         private TextView tvTripId, tvTripStatus, tvDeparture, tvDestination;
-        private TextView tvDateTime, tvPassengers, tvTotalPrice;
+        private TextView tvDateTime;
 
         public TripViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -119,8 +119,6 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
             tvDeparture = itemView.findViewById(R.id.tvDeparture);
             tvDestination = itemView.findViewById(R.id.tvDestination);
             tvDateTime = itemView.findViewById(R.id.tvDateTime);
-            tvPassengers = itemView.findViewById(R.id.tvPassengers);
-            tvTotalPrice = itemView.findViewById(R.id.tvTotalPrice);
 
             setupClickListeners();
         }
@@ -157,11 +155,7 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
                     }
                 }
 
-                tvPassengers.setText(formatPassengers(currentPassengers, vehicle.getSeatsCount()));
-                tvTotalPrice.setText(formatPrice(calculateTotalPrice(trip)));
             } else {
-                tvPassengers.setText("0/0");
-                tvTotalPrice.setText("0.00 BYN");
             }
 
             setupStatus(trip.getStatus());

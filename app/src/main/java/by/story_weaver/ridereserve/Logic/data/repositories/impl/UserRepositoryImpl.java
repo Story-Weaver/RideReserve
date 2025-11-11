@@ -47,8 +47,8 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void updateUser(User user) { dao.update(user); }
     @Override
-    public void exit(){
-            dao.exit();
+    public boolean exit(){
+        return dao.exit();
     }
 
     @Override

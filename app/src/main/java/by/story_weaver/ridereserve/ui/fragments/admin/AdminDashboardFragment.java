@@ -1,10 +1,12 @@
 package by.story_weaver.ridereserve.ui.fragments.admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,15 +24,18 @@ import by.story_weaver.ridereserve.Logic.adapters.TripsAdapter;
 import by.story_weaver.ridereserve.Logic.data.models.AdminStats;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.viewModels.AdminViewModel;
+import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.R;
+import by.story_weaver.ridereserve.ui.activities.AuthActivity;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class AdminDashboardFragment extends Fragment {
 
     private AdminViewModel adminViewModel;
+    private AuthViewModel authViewModel;
     private TripsAdapter tripsAdapter;
-
+    private ImageButton exit;
     private TextView tvTotalUsers, tvTotalRoutes, tvTotalTrips, tvTotalBookings, tvTotalVehicles, tvTotalDrivers;
     private TextView tvActiveTripsCount, tvScheduledTripsCount, tvConfirmedBookingsCount, tvCancelledBookingsCount;
     private RecyclerView rvActiveTrips;
@@ -45,11 +50,15 @@ public class AdminDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        adminViewModel = new ViewModelProvider(this).get(AdminViewModel.class);
+        adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         initViews(view);
         setupRecyclerView();
         observeData();
         loadData();
+        exit.setOnClickListener(v -> {
+            authViewModel.logout();
+        });
     }
 
     private void initViews(View view) {
@@ -59,6 +68,7 @@ public class AdminDashboardFragment extends Fragment {
         tvTotalBookings = view.findViewById(R.id.tvTotalBookings);
         tvTotalVehicles = view.findViewById(R.id.tvTotalVehicles);
         tvTotalDrivers = view.findViewById(R.id.tvTotalDrivers);
+        exit = view.findViewById(R.id.btnExit);
 
         tvActiveTripsCount = view.findViewById(R.id.tvActiveTripsCount);
         tvScheduledTripsCount = view.findViewById(R.id.tvScheduledTripsCount);
@@ -75,6 +85,18 @@ public class AdminDashboardFragment extends Fragment {
     }
 
     private void observeData() {
+        authViewModel.getLogOut().observe(getViewLifecycleOwner(), v -> {
+            switch (v.status){
+                case SUCCESS:
+                    requireActivity().startActivity(new Intent(requireActivity(), AuthActivity.class));
+                    requireActivity().finish();
+                    break;
+                case LOADING:
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(), "Ошибка выхода", Toast.LENGTH_SHORT).show();
+            }
+        });
         adminViewModel.getAdminStats().observe(getViewLifecycleOwner(), v -> {
             switch (v.status){
                 case LOADING:

@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -135,6 +136,18 @@ public class ProfileFragment extends Fragment {
     private void setupObservers() {
         mainViewModel.closeRequest().observe(getViewLifecycleOwner(), request -> {
             refreshData();
+        });
+        authViewModel.getLogOut().observe(getViewLifecycleOwner(), v -> {
+            switch (v.status){
+                case SUCCESS:
+                    requireActivity().startActivity(new Intent(requireActivity(), AuthActivity.class));
+                    requireActivity().finish();
+                    break;
+                case LOADING:
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(), "Ошибка выхода", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

@@ -309,13 +309,24 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Пассажиры"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Пассажиры"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+
 
                 <!-- Список пассажиров -->
                 <androidx.recyclerview.widget.RecyclerView
@@ -324,7 +335,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Итого -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
