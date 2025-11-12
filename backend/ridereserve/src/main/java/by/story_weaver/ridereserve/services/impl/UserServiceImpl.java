@@ -32,6 +32,24 @@ public class UserServiceImpl implements UserService{
     private TripService tripService;
 
     @Override
+    public List<User> getListPassengers(long tripId){
+        try {
+            List<User> list = new ArrayList<>();
+            List<Booking> bookings = bookingService.getBookingsByTrip(tripId);
+            System.out.println("have " + bookings.size() + "bookings");
+            for (Booking i : bookings) {
+                list.add(getUserById(i.getPassengerId()));
+            }
+            System.out.println("have " + list.size() + "users");
+            return list;
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     public List<User> getAllUsers() {
         try {
             List<User> list = userRepository.findAll();
@@ -68,6 +86,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public User createUser(User user) {
         try {
+            user.setId(null);
             userRepository.save(user);
             return userRepository.findByEmail(user.getEmail());
         } catch (Exception e) {

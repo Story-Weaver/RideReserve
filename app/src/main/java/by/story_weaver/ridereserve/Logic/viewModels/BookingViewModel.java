@@ -68,6 +68,9 @@ public class BookingViewModel extends ViewModel {
     }
 
     // Getters for LiveData
+    public LiveData<UiState<List<User>>> getPassengers(){
+        return passengers;
+    }
     public LiveData<UiState<List<String>>> getAllCitiesLive() { return allCities; }
     public LiveData<UiState<List<Route>>> getAllRoutes() { return allRoutes; }
     public LiveData<UiState<List<Route>>> getFilteredRoutes() { return filteredRoutes; }
@@ -125,27 +128,14 @@ public class BookingViewModel extends ViewModel {
     }
     public void loadPassengers(long tripId){
         passengers.postValue(UiState.loading());
-        List<User> listOfPassengers = new ArrayList<>();
-        bookingApiService.getBookingsByTrip(tripId).enqueue(new Callback<>() {
+        userApiService.getPassengers(tripId).enqueue(new Callback<>() {
             @Override
-            public void onResponse(Call<List<Booking>> call, Response<List<Booking>> response) {
-                for(Booking i: response.body()){
-                    userApiService.getUserById(i.getPassengerId()).enqueue(new Callback<>() {
-                        @Override
-                        public void onResponse(Call<User> call, Response<User> response) {
-                            listOfPassengers.add(response.body());
-                        }
-
-                        @Override
-                        public void onFailure(Call<User> call, Throwable t) {
-                        }
-                    });
-                }
-                passengers.postValue(UiState.success(listOfPassengers));
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                passengers.postValue(UiState.success(response.body()));
             }
 
             @Override
-            public void onFailure(Call<List<Booking>> call, Throwable t) {
+            public void onFailure(Call<List<User>> call, Throwable t) {
                 passengers.postValue(UiState.error(t.getMessage()));
             }
         });

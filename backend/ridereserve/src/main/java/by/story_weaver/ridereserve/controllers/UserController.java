@@ -9,6 +9,7 @@ import by.story_weaver.ridereserve.models.User;
 import by.story_weaver.ridereserve.services.UserService;
 import lombok.AllArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -28,6 +29,16 @@ public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
+@GetMapping("/passengers/{tripId}")
+    public ResponseEntity<?> getListPassengers(@PathVariable long tripId) {
+        try {
+            List<User> list = userService.getListPassengers(tripId);
+            return ResponseEntity.ok(list);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
 
 @GetMapping("/{id}")
 public ResponseEntity<User> getUserById(@PathVariable Long id) {

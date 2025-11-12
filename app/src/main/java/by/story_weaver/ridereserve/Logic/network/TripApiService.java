@@ -4,6 +4,7 @@ import java.util.List;
 
 import by.story_weaver.ridereserve.Logic.data.enums.TripStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
+import by.story_weaver.ridereserve.Logic.data.models.User;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;

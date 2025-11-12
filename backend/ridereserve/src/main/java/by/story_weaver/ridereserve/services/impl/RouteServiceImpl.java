@@ -61,6 +61,7 @@ public class RouteServiceImpl implements RouteService{
     @Override
     public Route createRoute(Route route) {
         try {
+            route.setId(null);
             return routeRepository.save(route);
         } catch (Exception e) {
             return null;

@@ -31,6 +31,7 @@ import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.activities.BookingActivity;
+import by.story_weaver.ridereserve.ui.fragments.user.TripDetailFragment;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -235,8 +236,7 @@ public class BookingsListFragment extends Fragment {
     }
 
     private void openTripDetails(Trip trip) {
-        // Assuming you have a TripDetailFragment that can show trip details
-        // TripDetailFragment fragment = TripDetailFragment.newInstance(trip.getId());
-        // mainViewModel.openFullscreen(fragment);
+        TripDetailFragment fragment = TripDetailFragment.newInstance(trip.getId());
+        mainViewModel.openFullscreen(fragment);
     }
 }

@@ -16,10 +16,28 @@
         <com.google.android.material.textfield.TextInputEditText android:id="@+id/etPrice" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <Spinner
+        android:id="@+id/spinner_driver"
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="30dp" />
+
+    <Spinner
+        android:layout_marginTop="16dp"
+        android:id="@+id/spinner_route"
+        android:layout_width="match_parent"
+        android:layout_height="30dp" />
+
+    <Spinner
+        android:layout_marginTop="16dp"
+        android:id="@+id/spinner_vehicle"
+        android:layout_width="match_parent"
+        android:layout_height="30dp" />
+
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Сохранить"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp"
+        android:text="Сохранить" />
 </LinearLayout>

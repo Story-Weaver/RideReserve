@@ -16,7 +16,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
+import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.fragments.auth.EntranceFragment;
 import by.story_weaver.ridereserve.ui.fragments.auth.RegistrationFragment;
@@ -39,8 +41,8 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        // Проверяем авторизацию
-        if(checkSignedIn() != -1){
+        AuthViewModel authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        if(authViewModel.checkSignedIn() != -1){
             startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
@@ -54,11 +56,6 @@ public class AuthActivity extends AppCompatActivity {
         switchToLogin();
         switchToRegister();
         switchToLogin();
-    }
-
-    private int checkSignedIn() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        return prefs.getInt(KEY_USER_ID, -1);
     }
 
     private void setupWindowInsets() {

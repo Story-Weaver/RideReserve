@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -42,6 +43,7 @@ public class AdminViewModel extends ViewModel {
     private final MutableLiveData<UiState<Boolean>> vehicleDelete = new MutableLiveData<>();
     private final MutableLiveData<UiState<Booking>> bookingOperation = new MutableLiveData<>();
     private final MutableLiveData<UiState<Boolean>> bookingDelete = new MutableLiveData<>();
+    private final MutableLiveData<UiState<List<User>>> drivers = new MutableLiveData<>();
 
     @Inject
     public AdminViewModel(AdminApiService adminApiService) {
@@ -51,6 +53,9 @@ public class AdminViewModel extends ViewModel {
     public LiveData<UiState<AdminStats>> getAdminStats() { return adminStats; }
     public LiveData<UiState<List<Trip>>> getActiveTrips() { return activeTrips; }
     public LiveData<UiState<List<User>>> getUsers() { return users; }
+    public LiveData<UiState<List<User>>> getDrivers() {
+        return drivers;
+    }
     public LiveData<UiState<List<Route>>> getRoutes() { return routes; }
     public LiveData<UiState<List<Trip>>> getTrips() { return trips; }
     public LiveData<UiState<List<Vehicle>>> getVehicles() { return vehicles; }
@@ -113,6 +118,31 @@ public class AdminViewModel extends ViewModel {
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 users.postValue(UiState.error(t.getMessage()));
+            }
+        });
+    }
+    public void loadAllDrivers() {
+        drivers.postValue(UiState.loading());
+        adminApiService.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Фильтруем только водителей
+                    List<User> driverList = new ArrayList<>();
+                    for (User user : response.body()) {
+                        if (user.getRole() == UserRole.DRIVER) {
+                            driverList.add(user);
+                        }
+                    }
+                    drivers.postValue(UiState.success(driverList));
+                } else {
+                    drivers.postValue(UiState.error("Ошибка загрузки водителей: " + response.code()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                drivers.postValue(UiState.error(t.getMessage()));
             }
         });
     }

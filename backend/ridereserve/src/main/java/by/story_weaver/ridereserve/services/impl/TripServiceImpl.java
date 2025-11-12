@@ -47,6 +47,7 @@ public class TripServiceImpl implements TripService{
         try {
             return tripRepository.getTripById(id);
         } catch (Exception e) {
+            
             return null;
         }
     }
@@ -54,11 +55,17 @@ public class TripServiceImpl implements TripService{
     @Override
     public Trip createTrip(Trip trip) {
         try {
-            return tripRepository.save(trip);
+            trip.setId(null);
+            Trip saved = tripRepository.save(trip);
+            System.out.println("Trip saved successfully: " + saved);
+            return saved;
         } catch (Exception e) {
+            System.err.println("Error saving trip: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
+
 
     @Override
     public Trip updateTrip(Trip trip) {

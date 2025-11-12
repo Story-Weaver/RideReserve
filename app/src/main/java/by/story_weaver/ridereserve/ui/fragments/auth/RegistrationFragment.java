@@ -93,7 +93,6 @@ public class RegistrationFragment extends Fragment {
             switch (state.status){
                 case LOADING:
                 case ERROR:
-                    Toast.makeText(requireActivity(), "" + state.message, Toast.LENGTH_SHORT).show();
                     break;
 
                 case SUCCESS:

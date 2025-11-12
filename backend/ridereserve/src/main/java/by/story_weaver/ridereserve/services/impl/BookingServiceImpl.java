@@ -50,10 +50,7 @@ public class BookingServiceImpl implements BookingService{
     @Override
 public Booking createBooking(Booking booking) {
     try {
-        // Убедитесь, что ID устанавливается в null для новой записи
         booking.setId(null);
-        
-        // Убедитесь, что статус установлен, если он null
         if (booking.getStatus() == null) {
             booking.setStatus(BookingStatus.PENDING);
         }

@@ -1,5 +1,7 @@
 package by.story_weaver.ridereserve.Logic.data.models;
 
+import androidx.annotation.NonNull;
+
 public class Route {
     private long id;
     private String name;        // например "Маршрут 5"
@@ -14,6 +16,17 @@ public class Route {
     public Route(long id, String name, String origin, String destination,double distance, String time, String stopsJson){
         this.id = id; this.name = name; this.origin = origin; this.destination = destination;
         this.distance = distance; this.time = time; this.stopsJson = stopsJson;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        if (origin != null && destination != null) {
+            return origin + " → " + destination;
+        } else if (name != null) {
+            return name;
+        }
+        return "Маршрут";
     }
 
     // getters/setters...

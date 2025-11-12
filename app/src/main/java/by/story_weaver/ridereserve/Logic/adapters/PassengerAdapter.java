@@ -15,15 +15,13 @@ import by.story_weaver.ridereserve.R;
 public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.PassengerViewHolder> {
 
     private List<User> passengers;
-    private List<Booking> bookings;
 
     public PassengerAdapter(List<User> passengers) {
         this.passengers = passengers;
     }
 
-    public void updatePassengers(List<User> newPassengers, List<Booking> newBookings) {
+    public void updatePassengers(List<User> newPassengers) {
         this.passengers = newPassengers;
-        this.bookings = newBookings;
         notifyDataSetChanged();
     }
 
@@ -38,8 +36,7 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.Pass
     @Override
     public void onBindViewHolder(@NonNull PassengerViewHolder holder, int position) {
         User passenger = passengers.get(position);
-        Booking booking = bookings != null && position < bookings.size() ? bookings.get(position) : null;
-        holder.bind(passenger, booking);
+        holder.bind(passenger);
     }
 
     @Override
@@ -57,7 +54,7 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.Pass
             tvPassengerPhone = itemView.findViewById(R.id.tvPassengerPhone);
         }
 
-        public void bind(User passenger, Booking booking) {
+        public void bind(User passenger) {
             tvPassengerName.setText(passenger.getFullName());
             tvPassengerPhone.setText(passenger.getPhone());
         }

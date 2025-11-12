@@ -257,7 +257,6 @@ public ResponseEntity<Trip> getTripById(@PathVariable Long id) {
 @PostMapping("/trips")
 public ResponseEntity<Trip> createTrip(@RequestBody Trip trip) {
     try {
-        if (trip == null) return ResponseEntity.badRequest().build();
         Trip createdTrip = tripService.createTrip(trip);
         return createdTrip != null
                 ? ResponseEntity.status(HttpStatus.CREATED).body(createdTrip)

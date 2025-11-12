@@ -76,6 +76,15 @@ public class TripDetailFragment extends Fragment {
         if (getArguments() != null) {
             tripId = getArguments().getLong(ARG_TRIP_ID);
         }
+        if(currentBookings != null){
+            currentBookings.clear();
+        }
+        if(currentPassengers != null){
+            currentPassengers.clear();
+        }
+        currentTrip = null;
+        currentRoute = null;
+        currentVehicle = null;
     }
 
     @Override
@@ -122,7 +131,7 @@ public class TripDetailFragment extends Fragment {
         passengerAdapter = new PassengerAdapter(new ArrayList<>());
         rvPassengers.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvPassengers.setAdapter(passengerAdapter);
-        //TODO проверить правиильность загрузки пассажиров
+        loadPassengersData();
     }
 
     private void setupObservers() {
@@ -156,23 +165,15 @@ public class TripDetailFragment extends Fragment {
             }
         });
 
-        // Observe user data for passengers
-        bookingViewModel.getUserById().observe(getViewLifecycleOwner(), userState -> {
-            if (userState.status == UiState.Status.SUCCESS && userState.data != null) {
-                // Check if we already have this user in the list
-                boolean userExists = false;
-                for (User passenger : currentPassengers) {
-                    if (passenger.getId() == userState.data.getId()) {
-                        userExists = true;
-                        break;
-                    }
-                }
-
-                if (!userExists) {
-                    currentPassengers.add(userState.data);
-                    passengerAdapter.updatePassengers(currentPassengers, currentBookings);
-                    updatePassengersInfo();
-                }
+        bookingViewModel.getPassengers().observe(getViewLifecycleOwner(), v -> {
+            switch (v.status){
+                case LOADING:
+                case ERROR:
+                    break;
+                case SUCCESS:
+                    currentPassengers = v.data;
+                    passengerAdapter.updatePassengers(v.data);
+                    break;
             }
         });
 
@@ -241,15 +242,11 @@ public class TripDetailFragment extends Fragment {
 
     private void loadPassengersData() {
         currentPassengers.clear();
-
         if (currentBookings.isEmpty()) {
             cardPassengers.setVisibility(View.GONE);
         } else {
             cardPassengers.setVisibility(View.VISIBLE);
-            // Load each passenger's data
-            for (Booking booking : currentBookings) {
-                bookingViewModel.loadUserById(booking.getPassengerId());
-            }
+            bookingViewModel.loadPassengers(tripId);
         }
 
         updatePassengersInfo();

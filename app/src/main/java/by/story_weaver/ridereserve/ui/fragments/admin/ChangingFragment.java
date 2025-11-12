@@ -2,13 +2,16 @@ package by.story_weaver.ridereserve.ui.fragments.admin;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -147,7 +150,12 @@ public class ChangingFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        btnAdd.setOnClickListener(v -> openAddDialog());
+        btnAdd.setOnClickListener(v -> {
+            openAddDialog();
+            viewModel.loadAllDrivers();
+            viewModel.loadAllRoutes();
+            viewModel.loadAllVehicles();
+        });
     }
 
     private void setupObservers() {
@@ -448,7 +456,7 @@ public class ChangingFragment extends Fragment {
         TextInputEditText etEmail = dialog.findViewById(R.id.etEmail);
         TextInputEditText etPhone = dialog.findViewById(R.id.etPhone);
         TextInputEditText etPassword = dialog.findViewById(R.id.etPassword);
-        MaterialButton btnSave = dialog.findViewById(R.id.btnSave);
+        Button btnSave = dialog.findViewById(R.id.btnSave);
 
         if (user != null) {
             etFullName.setText(user.getFullName());
@@ -566,7 +574,14 @@ public class ChangingFragment extends Fragment {
         TextInputEditText etDeparture = dialog.findViewById(R.id.etDepartureTime);
         TextInputEditText etArrival = dialog.findViewById(R.id.etArrivalTime);
         TextInputEditText etPrice = dialog.findViewById(R.id.etPrice);
+        Spinner spinnerDriver = dialog.findViewById(R.id.spinner_driver);
+        Spinner spinnerRoute = dialog.findViewById(R.id.spinner_route);
+        Spinner spinnerVehicle = dialog.findViewById(R.id.spinner_vehicle);
         MaterialButton btnSave = dialog.findViewById(R.id.btnSave);
+
+        setupDriversSpinner(spinnerDriver, trip);
+        setupRoutesSpinner(spinnerRoute, trip);
+        setupVehiclesSpinner(spinnerVehicle, trip);
 
         if (trip != null) {
             etDeparture.setText(trip.getDepartureTime());
@@ -574,39 +589,131 @@ public class ChangingFragment extends Fragment {
             etPrice.setText(String.valueOf(trip.getPrice()));
         }
 
-        btnSave.setOnClickListener(v -> {
-            String departure = etDeparture.getText().toString().trim();
-            String arrival = etArrival.getText().toString().trim();
-            String priceStr = etPrice.getText().toString().trim();
 
-            if (TextUtils.isEmpty(departure) || TextUtils.isEmpty(arrival) || TextUtils.isEmpty(priceStr)) {
+        btnSave.setOnClickListener(v -> {
+            String dep = etDeparture.getText() != null ? etDeparture.getText().toString().trim() : "";
+            String arr = etArrival.getText() != null ? etArrival.getText().toString().trim() : "";
+            String priceStr = etPrice.getText() != null ? etPrice.getText().toString().trim() : "";
+
+            if (TextUtils.isEmpty(dep) || TextUtils.isEmpty(arr) || TextUtils.isEmpty(priceStr)) {
                 Toast.makeText(requireContext(), "Заполните все поля", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            try {
-                double price = Double.parseDouble(priceStr);
+            double price = Double.parseDouble(priceStr);
 
-                if (trip == null) {
-                    Trip newTrip = new Trip();
-                    newTrip.setDepartureTime(departure);
-                    newTrip.setArrivalTime(arrival);
-                    newTrip.setPrice(price);
-                    viewModel.createTrip(newTrip);
-                } else {
-                    trip.setDepartureTime(departure);
-                    trip.setArrivalTime(arrival);
-                    trip.setPrice(price);
-                    viewModel.updateTrip(trip);
-                }
+            User selectedDriver = (User) spinnerDriver.getSelectedItem();
+            Route selectedRoute = (Route) spinnerRoute.getSelectedItem();
+            Vehicle selectedVehicle = (Vehicle) spinnerVehicle.getSelectedItem();
 
-                dialog.dismiss();
-            } catch (NumberFormatException e) {
-                Toast.makeText(requireContext(), "Неверный формат цены", Toast.LENGTH_SHORT).show();
+            if (selectedDriver == null || selectedRoute == null || selectedVehicle == null
+                    || selectedDriver.getId() <= 0 || selectedRoute.getId() <= 0 || selectedVehicle.getId() <= 0) {
+                Toast.makeText(requireContext(), "Выберите все параметры поездки", Toast.LENGTH_SHORT).show();
+                return;
             }
+            Log.d("TripCreation", "=== Creating new Trip ===");
+            Log.d("TripCreation", "Route ID: " + (selectedRoute != null ? selectedRoute.getId() : "null"));
+            Log.d("TripCreation", "Vehicle ID: " + (selectedVehicle != null ? selectedVehicle.getId() : "null"));
+            Log.d("TripCreation", "Driver ID: " + (selectedDriver != null ? selectedDriver.getId() : "null"));
+            Log.d("TripCreation", "Departure time: " + dep);
+            Log.d("TripCreation", "Arrival time: " + arr);
+            Log.d("TripCreation", "Price: " + price);
+            Log.d("TripCreation", "Status: " + TripStatus.SCHEDULED);
+            Trip newTrip = new Trip(
+                    selectedRoute.getId(),
+                    selectedVehicle.getId(),
+                    selectedDriver.getId(),
+                    dep,
+                    arr,
+                    TripStatus.SCHEDULED,
+                    price
+            );
+
+            if (trip != null) {
+                newTrip.setId(trip.getId());
+                viewModel.updateTrip(newTrip);
+                Toast.makeText(requireContext(), "Рейс обновлён", Toast.LENGTH_SHORT).show();
+            } else {
+                viewModel.createTrip(newTrip);
+                Toast.makeText(requireContext(), "Рейс добавлен", Toast.LENGTH_SHORT).show();
+            }
+
+            dialog.dismiss();
         });
 
         dialog.show();
+    }
+
+    private void setupDriversSpinner(Spinner spinner, @Nullable Trip trip) {
+        viewModel.getDrivers().observe(getViewLifecycleOwner(), state -> {
+            if (state == null || state.status != UiState.Status.SUCCESS || state.data == null) return;
+
+            List<User> drivers = new ArrayList<>();
+            drivers.add(new User(-1, "", "", "Выберите водителя", "", 0, UserRole.GUEST));
+            drivers.addAll(state.data);
+
+            ArrayAdapter<User> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, drivers);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+
+            if (trip != null) {
+                for (int i = 0; i < drivers.size(); i++) {
+                    if (drivers.get(i).getId() == trip.getDriverId()) {
+                        spinner.setSelection(i);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    private void setupRoutesSpinner(Spinner spinner, @Nullable Trip trip) {
+        viewModel.getRoutes().observe(getViewLifecycleOwner(), state -> {
+            if (state == null || state.status != UiState.Status.SUCCESS || state.data == null) return;
+
+            List<Route> routes = new ArrayList<>();
+            routes.add(new Route(-1, "Выберите маршрут", "", "", 0.0, "", ""));
+            routes.addAll(state.data);
+
+            ArrayAdapter<Route> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, routes);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+
+            if (trip != null) {
+                for (int i = 0; i < routes.size(); i++) {
+                    if (routes.get(i).getId() == trip.getRouteId()) {
+                        spinner.setSelection(i);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    private void setupVehiclesSpinner(Spinner spinner, @Nullable Trip trip) {
+        viewModel.getVehicles().observe(getViewLifecycleOwner(), state -> {
+            if (state == null || state.status != UiState.Status.SUCCESS || state.data == null) return;
+
+            List<Vehicle> vehicles = new ArrayList<>();
+            vehicles.add(new Vehicle(-1, "", "Выберите транспорт", 0));
+            vehicles.addAll(state.data);
+
+            ArrayAdapter<Vehicle> adapter = new ArrayAdapter<>(requireContext(),
+                    android.R.layout.simple_spinner_item, vehicles);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+
+            if (trip != null) {
+                for (int i = 0; i < vehicles.size(); i++) {
+                    if (vehicles.get(i).getId() == trip.getVehicleId()) {
+                        spinner.setSelection(i);
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     private void showVehicleDialog(@Nullable Vehicle vehicle) {

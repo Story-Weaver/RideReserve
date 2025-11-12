@@ -12,10 +12,7 @@ import by.story_weaver.ridereserve.models.enums.TripStatus;
 import by.story_weaver.ridereserve.services.BookingService;
 import by.story_weaver.ridereserve.services.TripService;
 import lombok.AllArgsConstructor;
-
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController

@@ -1,5 +1,7 @@
 package by.story_weaver.ridereserve.Logic.data.models;
 
+import androidx.annotation.NonNull;
+
 import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
 
 public class User {
@@ -13,6 +15,12 @@ public class User {
     private boolean deleted = false;
 
     public User() {}
+
+    @NonNull
+    @Override
+    public String toString() {
+        return fullName != null ? fullName : email;
+    }
 
     public User(long id, String email, String password, String fullName, String phone,int inSystem, UserRole role) {
         this.id = id; this.email = email; this.password = password;

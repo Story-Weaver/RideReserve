@@ -18,4 +18,6 @@ public interface UserApiService {
     Call<User> updateUserProfile(@Path("id") Long id, @Body User request);
     @GET("users/email/{email}")
     Call<User> getUserByEmail(@Path("email") String email);
+    @GET("users/passengers/{tripId}")
+    Call<List<User>> getPassengers(@Path("tripId") long tripId);
 }

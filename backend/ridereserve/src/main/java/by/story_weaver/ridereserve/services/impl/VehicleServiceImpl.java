@@ -59,6 +59,7 @@ public class VehicleServiceImpl implements VehicleService{
     @Override
     public Vehicle createVehicle(Vehicle vehicle) {
         try {
+            vehicle.setId(null);
             vehicleRepository.save(vehicle);
             return vehicleRepository.getVehicleByNum(vehicle.getPlateNumber());
         } catch (Exception e) {
