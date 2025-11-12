@@ -26,10 +26,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import by.story_weaver.ridereserve.Logic.data.enums.UserRole;
 import by.story_weaver.ridereserve.Logic.data.models.User;
+import by.story_weaver.ridereserve.Logic.utils.NetworkHelper;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.activities.AuthActivity;
+import by.story_weaver.ridereserve.ui.activities.InternetActivity;
 import by.story_weaver.ridereserve.ui.fragments.admin.AdminDashboardFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.BookingMonitorFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.ChangingFragment;
@@ -69,6 +71,14 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        NetworkHelper.checkInternetConnection(requireActivity(), hasInternet -> {
+            if (hasInternet) {
+
+            } else {
+                requireActivity().startActivity(new Intent(requireActivity(), InternetActivity.class));
+                requireActivity().finish();
+            }
+        });
         Log.d(TAG, "onViewCreated - start");
         findAllId(view);
 
@@ -123,6 +133,7 @@ public class MainFragment extends Fragment {
         ensureMainFragmentPresent();
         Log.d(TAG, "onViewCreated - done");
     }
+
     private void observeData(){
         mainViewModel.openRequest().observe(getViewLifecycleOwner(), fragment -> {
             showFullscreenFragment(fragment,"tag", true);
@@ -160,9 +171,7 @@ public class MainFragment extends Fragment {
             Log.w(TAG, "bottomNavigationView is null in setupForRole");
             return;
         }
-//TODO проверка интернета
 //TODO детали брони у админа
-//TODO функция на бек для листа пассажиров
 
         switch (role) {
             case DRIVER:

@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import by.story_weaver.ridereserve.Logic.utils.NetworkHelper;
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
 import by.story_weaver.ridereserve.R;
 import by.story_weaver.ridereserve.ui.fragments.auth.EntranceFragment;
@@ -40,7 +41,13 @@ public class AuthActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-
+        NetworkHelper.checkInternetConnection(this, hasInternet -> {
+            if (hasInternet) {
+            } else {
+                startActivity(new Intent(this, InternetActivity.class));
+                finish();
+            }
+        });
         AuthViewModel authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         if(authViewModel.checkSignedIn() != -1){
             startActivity(new Intent(this, MainActivity.class));

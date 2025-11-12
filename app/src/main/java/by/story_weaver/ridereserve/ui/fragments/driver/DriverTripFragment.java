@@ -123,12 +123,17 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     private void setupObservers() {
         // Observe driver trips
         bookingViewModel.getDriverTrips().observe(getViewLifecycleOwner(), tripsState -> {
-            if (tripsState.status == UiState.Status.SUCCESS && tripsState.data != null) {
-                originalTrips = tripsState.data;
-                filteredTrips = new ArrayList<>(originalTrips);
-                Collections.reverse(filteredTrips);
-                adapter.updateTrips(filteredTrips);
-                updateStatistics(filteredTrips);
+            switch (tripsState.status){
+                case SUCCESS:
+                    originalTrips = tripsState.data;
+                    filteredTrips = new ArrayList<>(originalTrips);
+                    Collections.reverse(filteredTrips);
+                    adapter.updateTrips(filteredTrips);
+                    updateStatistics(filteredTrips);
+                    break;
+                case ERROR:
+                case LOADING:
+                    break;
             }
         });
 
