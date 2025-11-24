@@ -611,14 +611,6 @@ public class ChangingFragment extends Fragment {
                 Toast.makeText(requireContext(), "Выберите все параметры поездки", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Log.d("TripCreation", "=== Creating new Trip ===");
-            Log.d("TripCreation", "Route ID: " + (selectedRoute != null ? selectedRoute.getId() : "null"));
-            Log.d("TripCreation", "Vehicle ID: " + (selectedVehicle != null ? selectedVehicle.getId() : "null"));
-            Log.d("TripCreation", "Driver ID: " + (selectedDriver != null ? selectedDriver.getId() : "null"));
-            Log.d("TripCreation", "Departure time: " + dep);
-            Log.d("TripCreation", "Arrival time: " + arr);
-            Log.d("TripCreation", "Price: " + price);
-            Log.d("TripCreation", "Status: " + TripStatus.SCHEDULED);
             Trip newTrip = new Trip(
                     selectedRoute.getId(),
                     selectedVehicle.getId(),

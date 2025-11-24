@@ -222,6 +222,14 @@ public class MainFragment extends Fragment {
         bottomNavigationView.inflateMenu(menuResId);
     }
     private void handleBottomNavSelection(MenuItem item, UserRole role) {
+        NetworkHelper.checkInternetConnection(requireActivity(), hasInternet -> {
+            if (hasInternet) {
+
+            } else {
+                requireActivity().startActivity(new Intent(requireActivity(), InternetActivity.class));
+                requireActivity().finish();
+            }
+        });
         int id = item.getItemId();
         Log.d(TAG, "handleBottomNavSelection role=" + role + " id=" + id);
         if (role == UserRole.PASSENGER) {
