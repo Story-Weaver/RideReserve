@@ -43,7 +43,6 @@
 
         </LinearLayout>
 
-        <!-- Карточка со статистикой системы -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -382,7 +381,7 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Карточка последних поездок -->
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -403,6 +402,13 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar_AdminDashboard_Trip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvActiveTrips"

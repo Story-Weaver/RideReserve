@@ -1,11 +1,15 @@
 package by.story_weaver.ridereserve.ui.fragments.driver;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -45,6 +49,7 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     private DriverTripsAdapter adapter;
     private RecyclerView recyclerView;
     private TextInputEditText etSearch;
+    private ProgressBar progressBar;
 
     private TextView tvTotalTrips, tvUpcomingTrips, tvCompletedTrips;
 
@@ -86,6 +91,7 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     }
 
     private void initViews(View view) {
+        progressBar = view.findViewById(R.id.progressBar_DriverTrip);
         recyclerView = view.findViewById(R.id.rvTrips);
         etSearch = view.findViewById(R.id.etSearch);
         tvTotalTrips = view.findViewById(R.id.tvTotalTrips);
@@ -121,10 +127,10 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
     }
 
     private void setupObservers() {
-        // Observe driver trips
         bookingViewModel.getDriverTrips().observe(getViewLifecycleOwner(), tripsState -> {
             switch (tripsState.status){
                 case SUCCESS:
+                    progressBar.setVisibility(GONE);
                     originalTrips = tripsState.data;
                     filteredTrips = new ArrayList<>(originalTrips);
                     Collections.reverse(filteredTrips);
@@ -132,12 +138,14 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
                     updateStatistics(filteredTrips);
                     break;
                 case ERROR:
+                    progressBar.setVisibility(GONE);
+                    break;
                 case LOADING:
+                    progressBar.setVisibility(VISIBLE);
                     break;
             }
         });
 
-        // Observe routes for search functionality
         bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), routesState -> {
             if (routesState.status == UiState.Status.SUCCESS && routesState.data != null) {
                 originalRoutes = routesState.data;
@@ -145,7 +153,6 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
             }
         });
 
-        // Observe bookings
         bookingViewModel.getAllBookings().observe(getViewLifecycleOwner(), bookingsState -> {
             if (bookingsState.status == UiState.Status.SUCCESS && bookingsState.data != null) {
                 originalBookings = bookingsState.data;
@@ -153,7 +160,6 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
             }
         });
 
-        // Observe vehicles
         bookingViewModel.getAllVehicles().observe(getViewLifecycleOwner(), vehiclesState -> {
             if (vehiclesState.status == UiState.Status.SUCCESS && vehiclesState.data != null) {
                 originalVehicles = vehiclesState.data;
@@ -161,7 +167,6 @@ public class DriverTripFragment extends Fragment implements DriverTripsAdapter.O
             }
         });
 
-        // Observe trip status changes to refresh data
         bookingViewModel.getTripStatusChanged().observe(getViewLifecycleOwner(), tripState -> {
             if (tripState.status == UiState.Status.SUCCESS) {
                 refreshData();

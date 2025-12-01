@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.user;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -8,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -36,6 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class BookingsListFragment extends Fragment {
+    private ProgressBar progressBar;
     private ImageView add;
     private MainViewModel mainViewModel;
     private BookingViewModel bookingViewModel;
@@ -91,6 +96,7 @@ public class BookingsListFragment extends Fragment {
     }
 
     private void findById(View view) {
+        progressBar = view.findViewById(R.id.progressBar_BookingList);
         add = view.findViewById(R.id.addButton);
         recyclerView = view.findViewById(R.id.bookingList);
     }
@@ -141,15 +147,17 @@ public class BookingsListFragment extends Fragment {
         bookingViewModel.getBookingsForUser().observe(getViewLifecycleOwner(), list -> {
             switch (list.status){
                 case SUCCESS:
+                    progressBar.setVisibility(GONE);
                     if (list.data != null) {
                         currentBookings = list.data;
                         updateAdapterData();
                     }
                     break;
                 case ERROR:
-                    // Handle error
+                    progressBar.setVisibility(GONE);
                     break;
                 case LOADING:
+                    progressBar.setVisibility(VISIBLE);
                     break;
             }
         });

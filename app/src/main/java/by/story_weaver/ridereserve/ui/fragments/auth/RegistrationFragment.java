@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.auth;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -13,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import by.story_weaver.ridereserve.Logic.data.models.User;
@@ -23,6 +27,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class RegistrationFragment extends Fragment {
+    private ProgressBar progressBar;
     private EditText email;
     private EditText name;
     private EditText phone;
@@ -81,6 +86,7 @@ public class RegistrationFragment extends Fragment {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
     private void findById(View view){
+        progressBar = view.findViewById(R.id.progressBar_Registration);
         email = view.findViewById(R.id.regEmail);
         pass = view.findViewById(R.id.regPass);
         name = view.findViewById(R.id.regName);
@@ -92,10 +98,13 @@ public class RegistrationFragment extends Fragment {
         viewModel.getUserStateReg().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
-                case ERROR:
+                    progressBar.setVisibility(VISIBLE);
                     break;
-
+                case ERROR:
+                    progressBar.setVisibility(GONE);
+                    break;
                 case SUCCESS:
+                    progressBar.setVisibility(GONE);
                     viewModel.setUserInSystem(state.data.getId());
                     startActivity(new Intent(requireActivity(), MainActivity.class));
                     requireActivity().finish();

@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.user;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -8,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +37,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteClickListener {
 
+    private ProgressBar progressBar;
     private BookingViewModel bookingViewModel;
     private MainViewModel mainViewModel;
     private Routes2Adapter adapter;
@@ -61,6 +66,7 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
     }
 
     private void initViews(View view) {
+        progressBar = view.findViewById(R.id.progressBar_Route);
         recyclerView = view.findViewById(R.id.rvRoutes);
         etSearch = view.findViewById(R.id.etSearch);
     }
@@ -73,10 +79,19 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
 
     private void setupObservers() {
         bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), routesState -> {
-            if (routesState.status == UiState.Status.SUCCESS && routesState.data != null) {
-                originalRoutes = routesState.data;
-                filteredRoutes = new ArrayList<>(originalRoutes);
-                adapter.updateRoutes(filteredRoutes);
+            switch (routesState.status){
+                case LOADING:
+                    progressBar.setVisibility(VISIBLE);
+                    break;
+                case SUCCESS:
+                    progressBar.setVisibility(GONE);
+                    originalRoutes = routesState.data;
+                    filteredRoutes = new ArrayList<>(originalRoutes);
+                    adapter.updateRoutes(filteredRoutes);
+                    break;
+                case ERROR:
+                    progressBar.setVisibility(GONE);
+                    break;
             }
         });
     }

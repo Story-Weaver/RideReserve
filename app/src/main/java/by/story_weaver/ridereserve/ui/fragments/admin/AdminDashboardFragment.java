@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.admin;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class AdminDashboardFragment extends Fragment {
 
+    private ProgressBar progressTrip;
     private AdminViewModel adminViewModel;
     private AuthViewModel authViewModel;
     private TripsAdapter tripsAdapter;
@@ -76,6 +81,8 @@ public class AdminDashboardFragment extends Fragment {
         tvCancelledBookingsCount = view.findViewById(R.id.tvCancelledBookingsCount);
 
         rvActiveTrips = view.findViewById(R.id.rvActiveTrips);
+
+        progressTrip = view.findViewById(R.id.progressBar_AdminDashboard_Trip);
     }
 
     private void setupRecyclerView() {
@@ -111,11 +118,14 @@ public class AdminDashboardFragment extends Fragment {
         adminViewModel.getActiveTrips().observe(getViewLifecycleOwner(), v -> {
             switch (v.status){
                 case LOADING:
+                    progressTrip.setVisibility(VISIBLE);
                     break;
                 case SUCCESS:
+                    progressTrip.setVisibility(GONE);
                     updateTrips(v.data);
                     break;
                 case ERROR:
+                    progressTrip.setVisibility(GONE);
                     Toast.makeText(requireActivity(),v.message, Toast.LENGTH_SHORT).show();
             }
         });

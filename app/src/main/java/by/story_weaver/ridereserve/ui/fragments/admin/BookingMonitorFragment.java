@@ -36,7 +36,6 @@ public class BookingMonitorFragment extends Fragment {
     private BookingManagementAdapter bookingAdapter;
     private List<Booking> allBookings = new ArrayList<>();
 
-    // UI элементы
     private TextInputEditText etSearchBooking;
     private Spinner spinnerStatusFilter;
     private MaterialButton btnApplyFilters, btnClearFilters;

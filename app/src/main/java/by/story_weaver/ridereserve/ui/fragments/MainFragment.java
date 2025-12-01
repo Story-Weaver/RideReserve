@@ -35,7 +35,6 @@ import by.story_weaver.ridereserve.ui.activities.InternetActivity;
 import by.story_weaver.ridereserve.ui.fragments.admin.AdminDashboardFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.BookingMonitorFragment;
 import by.story_weaver.ridereserve.ui.fragments.admin.ChangingFragment;
-import by.story_weaver.ridereserve.ui.fragments.admin.RouteEditFragment;
 import by.story_weaver.ridereserve.ui.fragments.driver.DriverTripFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.BookingsListFragment;
 import by.story_weaver.ridereserve.ui.fragments.user.RouteFragment;

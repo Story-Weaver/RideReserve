@@ -135,7 +135,7 @@ public class TripDetailFragment extends Fragment {
     }
 
     private void setupObservers() {
-        // Observe trip data
+        //TODO
         bookingViewModel.getTripById().observe(getViewLifecycleOwner(), tripState -> {
             if (tripState.status == UiState.Status.SUCCESS && tripState.data != null) {
                 currentTrip = tripState.data;
@@ -156,12 +156,16 @@ public class TripDetailFragment extends Fragment {
             }
         });
 
-        // Observe vehicle data
         bookingViewModel.getVehicleById().observe(getViewLifecycleOwner(), vehicleState -> {
-            if (vehicleState.status == UiState.Status.SUCCESS && vehicleState.data != null) {
-                currentVehicle = vehicleState.data;
-                updateVehicleInfo();
-                updatePassengersInfo();
+            switch (vehicleState.status){
+                case LOADING:
+                case ERROR:
+                    break;
+                case SUCCESS:
+                    currentVehicle = vehicleState.data;
+                    updateVehicleInfo();
+                    updatePassengersInfo();
+                    break;
             }
         });
 

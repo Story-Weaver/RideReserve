@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.admin;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Color;
@@ -323,23 +326,21 @@ public class ChangingFragment extends Fragment {
     }
 
     private void showLoading(boolean loading) {
-        progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        if (loading) {
-            recyclerView.setVisibility(View.GONE);
-            tvEmptyList.setVisibility(View.GONE);
+        if(loading) {
+            progressBar.setVisibility(VISIBLE);
         } else {
-            recyclerView.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(GONE);
         }
     }
 
     private void updateEmptyState(boolean isEmpty) {
         if (isEmpty) {
-            recyclerView.setVisibility(View.GONE);
-            tvEmptyList.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(GONE);
+            tvEmptyList.setVisibility(VISIBLE);
             tvEmptyList.setText("Нет данных для отображения");
         } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            tvEmptyList.setVisibility(View.GONE);
+            recyclerView.setVisibility(VISIBLE);
+            tvEmptyList.setVisibility(GONE);
         }
     }
 
@@ -462,7 +463,7 @@ public class ChangingFragment extends Fragment {
             etFullName.setText(user.getFullName());
             etEmail.setText(user.getEmail());
             etPhone.setText(user.getPhone());
-            etPassword.setVisibility(View.GONE);
+            etPassword.setVisibility(GONE);
         }
 
         btnSave.setOnClickListener(v -> {

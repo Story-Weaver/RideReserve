@@ -1,5 +1,8 @@
 package by.story_weaver.ridereserve.ui.fragments.auth;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -15,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import by.story_weaver.ridereserve.Logic.viewModels.AuthViewModel;
@@ -28,6 +32,7 @@ public class EntranceFragment extends Fragment {
     private EditText pass;
     private Button enter;
     private AuthViewModel viewModel;
+    private ProgressBar progressBar;
 
 
     @Override
@@ -69,6 +74,7 @@ public class EntranceFragment extends Fragment {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
     private void findById(View view){
+        progressBar = view.findViewById(R.id.progressBar_Entrance);
         email = view.findViewById(R.id.enterEmail);
         pass = view.findViewById(R.id.enterPass);
         enter = view.findViewById(R.id.enterButtonEnter);
@@ -77,10 +83,14 @@ public class EntranceFragment extends Fragment {
         viewModel.getUserStateEnter().observe(getViewLifecycleOwner(), state -> {
             switch (state.status){
                 case LOADING:
-                case ERROR:
+                    progressBar.setVisibility(VISIBLE);
                     break;
-
+                case ERROR:
+                    progressBar.setVisibility(GONE);
+                    //TODO
+                    break;
                 case SUCCESS:
+                    progressBar.setVisibility(GONE);
                     viewModel.setUserInSystem(state.data.getId());
                     startActivity(new Intent(requireActivity(), MainActivity.class));
                     requireActivity().finish();
