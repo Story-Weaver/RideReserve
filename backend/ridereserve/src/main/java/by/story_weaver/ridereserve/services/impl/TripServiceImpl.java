@@ -111,7 +111,7 @@ public class TripServiceImpl implements TripService{
     @Override
     public List<Trip> getTripsByRoute(long routeId) {
         try {
-            return tripRepository.findByRouteId(routeId);
+            return tripRepository.findByRouteIdAndStatus(routeId, TripStatus.SCHEDULED.toString());
         } catch (Exception e) {
             return null;
         }

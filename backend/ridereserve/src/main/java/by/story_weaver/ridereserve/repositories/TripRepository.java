@@ -33,6 +33,9 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     @Query(value = "SELECT * FROM trips WHERE id = :id", nativeQuery = true)
     Trip getTripById(@Param("id") long id);
+    
+    @Query(value = "SELECT * FROM trips WHERE route_id = :routeId AND status = :status", nativeQuery = true)
+    List<Trip> findByRouteIdAndStatus(@Param("routeId") Long routeId, @Param("status") String status);
 
     int countByStatus(TripStatus status);
     List<Trip> findByStatus(TripStatus status);
