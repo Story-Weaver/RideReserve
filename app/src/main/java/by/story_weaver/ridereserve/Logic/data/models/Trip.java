@@ -8,7 +8,7 @@ public class Trip {
     private long vehicleId;
     private long driverId;
     private String departureTime;
-    private String arrivalTime; //время отправки
+    private String arrivalTime;
     private TripStatus status;
     private double price;
     private boolean deleted = false;

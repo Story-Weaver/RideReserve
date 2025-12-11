@@ -3,16 +3,14 @@ package by.story_weaver.ridereserve.ui.activities;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -22,7 +20,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -37,6 +34,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import by.story_weaver.ridereserve.Logic.adapters.RoutesAdapter;
 import by.story_weaver.ridereserve.Logic.adapters.TripsAdapter;
@@ -48,8 +46,8 @@ import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.User;
 import by.story_weaver.ridereserve.Logic.utils.UiState;
 import by.story_weaver.ridereserve.Logic.viewModels.BookingViewModel;
-import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.Logic.viewModels.MainViewModel;
+import by.story_weaver.ridereserve.Logic.viewModels.ProfileViewModel;
 import by.story_weaver.ridereserve.R;
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -60,14 +58,18 @@ public class BookingActivity extends AppCompatActivity {
     public static final String EXTRA_ROUTE_ID = "extra_route_id";
     public static final String RESULT_BOOKING_CREATED = "result_booking_created";
 
-    private TextInputEditText etFullName, etPhone, etEmail, etRouteSearch;
+    // UI Fields
+    private TextInputEditText etFullName, etPhone, etEmail, etRouteSearch, etMaxDistance;
+    private Spinner spinnerMaxDurationHours, spinnerMaxDurationMinutes;
     private TextInputLayout tilFullName, tilPhone, tilEmail;
     private MaterialButton book, btnSearchRoutes, btnBackToRoutes, btnBackToTrips;
     private Spinner spinnerFrom, spinnerTo;
     private RecyclerView recyclerRoutes, recyclerTrips;
-    private TextView textRouteCard;
+    private TextView textRouteCard, tvSelectedRoute, tvRouteInfo, tvDepartureTime, tvTripPrice, tvTotalPrice;
     private ProgressBar progressTrips;
     private CardView cardRouteSelection, cardRoutesList, cardTimeSelection, cardTripInfo, cardServices, cardPassenger, cardTotal;
+
+    // Logic Fields
     private RoutesAdapter routesAdapter;
     private TripsAdapter tripsAdapter;
     private BookingViewModel bookingViewModel;
@@ -76,6 +78,7 @@ public class BookingActivity extends AppCompatActivity {
     private User currentUser;
     private Trip currentTrip;
     private Route currentRoute;
+
     private boolean isChild = false;
     private boolean isPet = false;
     private double totalPrice = 0;
@@ -83,6 +86,10 @@ public class BookingActivity extends AppCompatActivity {
     private final double childPrice = 300;
     private long launchRouteId = -1;
     private long launchTripId = -1;
+
+    private long pendingPassengerId = -1;
+
+    private List<Route> allRoutes = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,7 +99,7 @@ public class BookingActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_booking);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scroll_booking), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
             return insets;
         });
 
@@ -115,33 +122,39 @@ public class BookingActivity extends AppCompatActivity {
         bookingViewModel.loadAllRoutes();
         bookingViewModel.loadAllCities();
 
-        // Устанавливаем начальное состояние в зависимости от способа запуска
         setupInitialState();
     }
 
     private void initViews() {
+        // Input Fields
         etFullName = findViewById(R.id.etFullName);
         etPhone = findViewById(R.id.etPhone);
         etEmail = findViewById(R.id.etEmail);
         tilFullName = findViewById(R.id.tilFullName);
         tilPhone = findViewById(R.id.tilPhone);
         tilEmail = findViewById(R.id.tilEmail);
-        textRouteCard = findViewById(R.id.textRouteCard);
-
         etRouteSearch = findViewById(R.id.etRouteSearch);
+        etMaxDistance = findViewById(R.id.etMaxDistance);
+
+        // Spinners
         spinnerFrom = findViewById(R.id.spinnerFrom);
         spinnerTo = findViewById(R.id.spinnerTo);
+        spinnerMaxDurationHours = findViewById(R.id.spinnerMaxDurationHours);
+        spinnerMaxDurationMinutes = findViewById(R.id.spinnerMaxDurationMinutes);
 
+        // Buttons
         btnSearchRoutes = findViewById(R.id.btnSearchRoutes);
         btnBackToRoutes = findViewById(R.id.btnBackToRoutes);
         btnBackToTrips = findViewById(R.id.btnBackToTrips);
+        book = findViewById(R.id.bookButton);
 
+        // Lists & Progress
         recyclerRoutes = findViewById(R.id.recyclerRoutes);
         recyclerTrips = findViewById(R.id.recyclerTrips);
         progressTrips = findViewById(R.id.progressTrips);
 
-        // Находим все карточки
-        cardRouteSelection = findViewById(R.id.cardRouteSelection); // Добавьте этот ID в макет
+        // Cards
+        cardRouteSelection = findViewById(R.id.cardRouteSelection);
         cardRoutesList = findViewById(R.id.cardRoutesList);
         cardTimeSelection = findViewById(R.id.cardTimeSelection);
         cardTripInfo = findViewById(R.id.cardTripInfo);
@@ -149,23 +162,26 @@ public class BookingActivity extends AppCompatActivity {
         cardPassenger = findViewById(R.id.cardPassenger);
         cardTotal = findViewById(R.id.cardTotal);
 
-        book = findViewById(R.id.bookButton);
+        // Text Views
+        textRouteCard = findViewById(R.id.textRouteCard);
+        tvSelectedRoute = findViewById(R.id.tvSelectedRoute);
+        tvRouteInfo = findViewById(R.id.tvRouteInfo);
+        tvDepartureTime = findViewById(R.id.tvDepartureTime);
+        tvTripPrice = findViewById(R.id.tvTripPrice);
+        tvTotalPrice = findViewById(R.id.tvTotalPrice);
     }
 
     private void setupInitialState() {
         if (launchTripId != -1) {
-            // Запуск с выбранной поездкой - скрываем выбор маршрута и времени
             hideRouteSelection();
             hideTimeSelection();
             bookingViewModel.loadTripById(launchTripId);
         } else if (launchRouteId != -1) {
-            // Запуск с выбранным маршрутом - скрываем выбор маршрута, показываем выбор времени
             hideRouteSelection();
             showTimeSelection();
-            bookingViewModel.loadAllRoutes(); // Для получения информации о маршруте
+            bookingViewModel.loadAllRoutes();
             bookingViewModel.loadTripsForRoute(launchRouteId);
         } else {
-            // Обычный запуск - показываем только выбор маршрута
             showRouteSelection();
             hideTimeSelection();
             hideRemainingCards();
@@ -192,6 +208,29 @@ public class BookingActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, placeholder);
         toAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTo.setAdapter(toAdapter);
+        setupDurationSpinners();
+    }
+    @SuppressLint("DefaultLocale")
+    private void setupDurationSpinners() {
+        List<String> hoursList = new ArrayList<>();
+        hoursList.add("Часы");
+        for (int i = 0; i < 24; i++) {
+            hoursList.add(String.format("%02d", i));
+        }
+        ArrayAdapter<String> hoursAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, hoursList);
+        hoursAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMaxDurationHours.setAdapter(hoursAdapter);
+
+        List<String> minutesList = new ArrayList<>();
+        minutesList.add("Минуты");
+        for (int i = 0; i < 60; i++) {
+            minutesList.add(String.format("%02d", i));
+        }
+        ArrayAdapter<String> minutesAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, minutesList);
+        minutesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMaxDurationMinutes.setAdapter(minutesAdapter);
     }
 
     private void setupButtonListeners() {
@@ -209,28 +248,18 @@ public class BookingActivity extends AppCompatActivity {
 
         CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
         cbUseMyData.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked && currentUser != null) {
-                etFullName.setText(currentUser.getFullName());
-                etPhone.setText(currentUser.getPhone());
-                etEmail.setText(currentUser.getEmail());
-
-                etFullName.setEnabled(false);
-                etPhone.setEnabled(false);
-                etEmail.setEnabled(false);
-
-                tilFullName.setError(null);
-                tilPhone.setError(null);
-                tilEmail.setError(null);
-            } else {
-                etFullName.setEnabled(true);
-                etPhone.setEnabled(true);
-                etEmail.setEnabled(true);
-
-                if (!isChecked) {
-                    etFullName.setText("");
-                    etPhone.setText("");
-                    etEmail.setText("");
+            if (isChecked) {
+                if (currentUser != null) {
+                    etFullName.setText(currentUser.getFullName());
+                    etPhone.setText(currentUser.getPhone());
+                    etEmail.setText(currentUser.getEmail());
                 }
+                setFieldsEnabled(false);
+            } else {
+                setFieldsEnabled(true);
+                etFullName.setText("");
+                etPhone.setText("");
+                etEmail.setText("");
             }
         });
 
@@ -250,11 +279,22 @@ public class BookingActivity extends AppCompatActivity {
         book.setOnClickListener(v -> createNewBooking());
     }
 
+    private void setFieldsEnabled(boolean enabled) {
+        etFullName.setEnabled(enabled);
+        etPhone.setEnabled(enabled);
+        etEmail.setEnabled(enabled);
+
+        if (!enabled) {
+            tilFullName.setError(null);
+            tilPhone.setError(null);
+            tilEmail.setError(null);
+        }
+    }
+
     private void setupObservers() {
         bookingViewModel.getTripById().observe(this, state -> {
             if (state.status == UiState.Status.SUCCESS && state.data != null) {
                 currentTrip = state.data;
-                // Загружаем информацию о маршруте для отображения
                 bookingViewModel.loadAllRoutes();
                 updateTripInfo(currentTrip);
                 showRemainingCards();
@@ -263,9 +303,9 @@ public class BookingActivity extends AppCompatActivity {
 
         bookingViewModel.getAllRoutes().observe(this, list -> {
             if (list.status == UiState.Status.SUCCESS && list.data != null) {
+                allRoutes = list.data;
                 routesAdapter.updateRoutes(list.data);
 
-                // Если запустились с routeId, находим и выбираем соответствующий маршрут
                 if (launchRouteId != -1 && currentRoute == null) {
                     for (Route r : list.data) {
                         if (r != null && r.getId() == launchRouteId) {
@@ -274,8 +314,18 @@ public class BookingActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                } else if (launchTripId == -1 && launchRouteId == -1) {
-                    // Обычный запуск - показываем все маршруты
+                }
+                if (currentTrip != null && currentRoute == null) {
+                    for (Route r : list.data) {
+                        if (r != null && r.getId() == currentTrip.getRouteId()) {
+                            currentRoute = r;
+                            updateTripInfo(currentTrip);
+                            break;
+                        }
+                    }
+                }
+
+                if (launchTripId == -1 && launchRouteId == -1) {
                     textRouteCard.setText("Все маршруты: ");
                     showRoutesList();
                 }
@@ -378,7 +428,6 @@ public class BookingActivity extends AppCompatActivity {
         });
     }
 
-    // Новые методы управления видимостью карточек
     private void showRouteSelection() {
         if (cardRouteSelection != null) cardRouteSelection.setVisibility(VISIBLE);
     }
@@ -397,7 +446,6 @@ public class BookingActivity extends AppCompatActivity {
 
     private void showTimeSelection() {
         if (cardTimeSelection != null) cardTimeSelection.setVisibility(VISIBLE);
-        // Показываем кнопку возврата к маршрутам только если не запустились с routeId
         if (btnBackToRoutes != null) {
             btnBackToRoutes.setVisibility(launchRouteId == -1 ? VISIBLE : GONE);
         }
@@ -409,7 +457,6 @@ public class BookingActivity extends AppCompatActivity {
 
     private void loadCurrentUser() {
         currentUser = profileViewModel.getProfile();
-
         CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
         if (currentUser != null && cbUseMyData.isChecked()) {
             etFullName.setText(currentUser.getFullName());
@@ -419,22 +466,116 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void searchRoutes() {
-        String routeNumber = etRouteSearch != null ? etRouteSearch.getText().toString().trim() : "";
-        String from = spinnerFrom != null && spinnerFrom.getSelectedItem() != null ? spinnerFrom.getSelectedItem().toString() : "";
-        String to = spinnerTo != null && spinnerTo.getSelectedItem() != null ? spinnerTo.getSelectedItem().toString() : "";
+        if (allRoutes == null || allRoutes.isEmpty()) {
+            Toast.makeText(this, "Данные маршрутов еще не загружены", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String routeNumber = etRouteSearch != null ? etRouteSearch.getText().toString().trim().toLowerCase() : "";
+        String fromCity = spinnerFrom != null && spinnerFrom.getSelectedItem() != null ? spinnerFrom.getSelectedItem().toString() : "";
+        String toCity = spinnerTo != null && spinnerTo.getSelectedItem() != null ? spinnerTo.getSelectedItem().toString() : "";
+
+        String maxDistanceStr = etMaxDistance != null ? Objects.requireNonNull(etMaxDistance.getText()).toString().trim() : "";
+
+        double maxDistance = -1;
+        int maxDurationMinutes = -1;
+
+        try {
+            if (!maxDistanceStr.isEmpty()) maxDistance = Double.parseDouble(maxDistanceStr);
+
+            String selectedHours = spinnerMaxDurationHours.getSelectedItem().toString();
+            String selectedMinutes = spinnerMaxDurationMinutes.getSelectedItem().toString();
+
+            final String durationPlaceholder = "Часы";
+            final String minutesPlaceholder = "Минуты";
+
+            if (!selectedHours.equals(durationPlaceholder) || !selectedMinutes.equals(minutesPlaceholder)) {
+                int hours = selectedHours.equals(durationPlaceholder) ? 0 : Integer.parseInt(selectedHours);
+                int minutes = selectedMinutes.equals(minutesPlaceholder) ? 0 : Integer.parseInt(selectedMinutes);
+
+                if (hours > 0 || minutes > 0) {
+                    maxDurationMinutes = hours * 60 + minutes;
+                }
+            }
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Неверный формат числа для длины", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<Route> filteredRoutes = new ArrayList<>(allRoutes);
+
+        final String cityPlaceholder = "Выберите город";
 
         if (!routeNumber.isEmpty()) {
-            bookingViewModel.loadRoutesByNumber(routeNumber);
-        } else if (!from.equals("Выберите город") && !to.equals("Выберите город")) {
-            bookingViewModel.loadRoutesByPoints(from, to);
+            filteredRoutes = filteredRoutes.stream()
+                    .filter(route -> route.getName().toLowerCase().contains(routeNumber) ||
+                            (route.getDestination() != null && route.getDestination().toLowerCase().contains(routeNumber)) ||
+                            (route.getOrigin() != null && route.getOrigin().toLowerCase().contains(routeNumber)))
+                    .collect(Collectors.toList());
+        }
+
+        if (!fromCity.equals(cityPlaceholder)) {
+            filteredRoutes = filteredRoutes.stream()
+                    .filter(route -> route.getOrigin() != null && route.getOrigin().equals(fromCity))
+                    .collect(Collectors.toList());
+        }
+
+        if (!toCity.equals(cityPlaceholder)) {
+            filteredRoutes = filteredRoutes.stream()
+                    .filter(route -> route.getDestination() != null && route.getDestination().equals(toCity))
+                    .collect(Collectors.toList());
+        }
+
+        if (maxDistance > 0) {
+            final double finalMaxDistance = maxDistance;
+            filteredRoutes = filteredRoutes.stream()
+                    .filter(route -> route.getDistance() <= finalMaxDistance)
+                    .collect(Collectors.toList());
+        }
+
+        if (maxDurationMinutes > 0) {
+            final int finalMaxDurationMinutes = maxDurationMinutes;
+
+            filteredRoutes = filteredRoutes.stream()
+                    .filter(route -> {
+                        String routeTimeStr = route.getTime();
+                        if (routeTimeStr == null || routeTimeStr.isEmpty()) {
+                            return false;
+                        }
+
+                        try {
+                            String[] parts = routeTimeStr.split(":");
+                            if (parts.length == 2) {
+                                int hours = Integer.parseInt(parts[0]);
+                                int minutes = Integer.parseInt(parts[1]);
+                                int routeDurationMinutes = hours * 60 + minutes;
+
+                                return routeDurationMinutes <= finalMaxDurationMinutes;
+                            }
+                        } catch (NumberFormatException e) {
+                        }
+                        return false;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        if (!filteredRoutes.isEmpty()) {
+            routesAdapter.updateRoutes(filteredRoutes);
+            textRouteCard.setText("Найденные маршруты: " + filteredRoutes.size());
+            showRoutesList();
         } else {
-            bookingViewModel.loadAllRoutes();
+            routesAdapter.updateRoutes(new ArrayList<>());
+            textRouteCard.setText("Маршруты не найдены");
+            hideRoutesList();
+            Toast.makeText(this, "Маршруты не найдены", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void onRouteSelected(Route route) {
         if (route == null) return;
         currentRoute = route;
+        updateSelectedRouteInfo(route);
         progressTrips.setVisibility(VISIBLE);
         bookingViewModel.loadTripsForRoute(route.getId());
         hideRouteSelection();
@@ -444,13 +585,22 @@ public class BookingActivity extends AppCompatActivity {
     private void onTripSelected(Trip trip) {
         if (trip == null) return;
         currentTrip = trip;
+
+        if (currentRoute == null && allRoutes != null) {
+            for (Route r : allRoutes) {
+                if (r != null && r.getId() == currentTrip.getRouteId()) {
+                    currentRoute = r;
+                    break;
+                }
+            }
+        }
+
         updateTripInfo(trip);
         hideTimeSelection();
         showRemainingCards();
     }
 
     private void updateSelectedRouteInfo(Route route) {
-        TextView tvSelectedRoute = findViewById(R.id.tvSelectedRoute);
         if (tvSelectedRoute != null && route != null) {
             String origin = route.getOrigin() != null ? route.getOrigin() : "";
             String destination = route.getDestination() != null ? route.getDestination() : "";
@@ -461,45 +611,56 @@ public class BookingActivity extends AppCompatActivity {
     private void updateTripInfo(Trip trip) {
         if (trip == null) return;
 
-        // Обновляем информацию о маршруте
         if (currentRoute != null) {
             String origin = currentRoute.getOrigin() != null ? currentRoute.getOrigin() : "";
             String destination = currentRoute.getDestination() != null ? currentRoute.getDestination() : "";
-            ((TextView) findViewById(R.id.tvRouteInfo)).setText(origin + " - " + destination);
+            if (tvRouteInfo != null) tvRouteInfo.setText(origin + " - " + destination);
+
+            if(tvSelectedRoute != null) {
+                tvSelectedRoute.setText("Маршрут: " + origin + " - " + destination);
+            }
         }
 
-        ((TextView) findViewById(R.id.tvDepartureTime)).setText(formatDateTime(trip.getDepartureTime()));
-        ((TextView) findViewById(R.id.tvTripPrice)).setText(String.format("%.2f BYN", trip.getPrice()));
+        if (tvDepartureTime != null) {
+            tvDepartureTime.setText(formatDateTime(trip.getDepartureTime()));
+        }
+        if (tvTripPrice != null) {
+            tvTripPrice.setText(String.format("%.2f BYN", trip.getPrice()));
+        }
         updateTotalPrice();
     }
 
     private void showRemainingCards() {
-        cardTripInfo.setVisibility(VISIBLE);
-        cardServices.setVisibility(VISIBLE);
-        cardPassenger.setVisibility(VISIBLE);
-        cardTotal.setVisibility(VISIBLE);
-        book.setVisibility(VISIBLE);
+        if (cardTripInfo != null) cardTripInfo.setVisibility(VISIBLE);
+        if (cardServices != null) cardServices.setVisibility(VISIBLE);
+        if (cardPassenger != null) cardPassenger.setVisibility(VISIBLE);
+        if (cardTotal != null) cardTotal.setVisibility(VISIBLE);
+        if (book != null) book.setVisibility(VISIBLE);
     }
 
     private void hideRemainingCards() {
-        cardTripInfo.setVisibility(GONE);
-        cardServices.setVisibility(GONE);
-        cardPassenger.setVisibility(GONE);
-        cardTotal.setVisibility(GONE);
-        book.setVisibility(GONE);
+        if (cardTripInfo != null) cardTripInfo.setVisibility(GONE);
+        if (cardServices != null) cardServices.setVisibility(GONE);
+        if (cardPassenger != null) cardPassenger.setVisibility(GONE);
+        if (cardTotal != null) cardTotal.setVisibility(GONE);
+        if (book != null) book.setVisibility(GONE);
     }
 
     private void returnToRouteSelection() {
         currentRoute = null;
         currentTrip = null;
+        launchRouteId = -1;
         showRouteSelection();
         showRoutesList();
         hideTimeSelection();
         hideRemainingCards();
-        tripsAdapter.updateTrips(new ArrayList<>());
-
-        // Сбрасываем выбранный маршрут при возврате
-        launchRouteId = -1;
+        if (routesAdapter != null && allRoutes != null) {
+            routesAdapter.updateRoutes(allRoutes);
+            textRouteCard.setText("Все маршруты: ");
+        }
+        if (tripsAdapter != null) {
+            tripsAdapter.updateTrips(new ArrayList<>());
+        }
     }
 
     private void returnToTripSelection() {
@@ -507,18 +668,17 @@ public class BookingActivity extends AppCompatActivity {
         showTimeSelection();
         hideRemainingCards();
 
-        // Обновляем информацию о выбранном маршруте
         if (currentRoute != null) {
             updateSelectedRouteInfo(currentRoute);
         }
     }
 
     private void updateTotalPrice() {
-        if (currentTrip == null) return;
+        if (currentTrip == null || tvTotalPrice == null) return;
         totalPrice = currentTrip.getPrice();
         if (isPet) totalPrice += petPrice;
         if (isChild) totalPrice += childPrice;
-        ((TextView) findViewById(R.id.tvTotalPrice)).setText(String.format("%.2f BYN", totalPrice));
+        tvTotalPrice.setText(String.format("%.2f BYN", totalPrice));
     }
 
     private String formatDateTime(String dateTime) {
@@ -527,8 +687,6 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private boolean isFormValid() {
-        boolean isValid = true;
-
         CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
 
         if (cbUseMyData.isChecked()) {
@@ -538,6 +696,8 @@ public class BookingActivity extends AppCompatActivity {
             }
             return true;
         }
+
+        boolean isValid = true;
 
         if (etFullName == null || Objects.requireNonNull(etFullName.getText()).toString().trim().isEmpty()) {
             if (tilFullName != null) tilFullName.setError("Введите ФИО");
@@ -566,8 +726,8 @@ public class BookingActivity extends AppCompatActivity {
 
         book.setEnabled(false);
 
-        long passengerId;
-        if (!((CheckBox) findViewById(R.id.cbUseMyData)).isChecked()) {
+        CheckBox cbUseMyData = findViewById(R.id.cbUseMyData);
+        if (!cbUseMyData.isChecked()) {
             String name = Objects.requireNonNull(etFullName.getText()).toString();
             String phone = Objects.requireNonNull(etPhone.getText()).toString();
             String email = Objects.requireNonNull(etEmail.getText()).toString();
@@ -579,8 +739,8 @@ public class BookingActivity extends AppCompatActivity {
                 book.setEnabled(true);
                 return;
             }
-            passengerId = profileViewModel.getIdByEmail(email);
-            if (passengerId == -1) {
+            pendingPassengerId = profileViewModel.getIdByEmail(email);
+            if (pendingPassengerId == -1) {
                 Toast.makeText(this, "Не удалось получить ID пользователя", Toast.LENGTH_SHORT).show();
                 book.setEnabled(true);
                 return;
@@ -591,30 +751,23 @@ public class BookingActivity extends AppCompatActivity {
                 book.setEnabled(true);
                 return;
             }
-            passengerId = currentUser.getId();
+            pendingPassengerId = currentUser.getId();
         }
 
-        bookingViewModel.hasBookingForUserAndTrip(passengerId, currentTrip.getId());
+        bookingViewModel.hasBookingForUserAndTrip(pendingPassengerId, currentTrip.getId());
     }
 
     private void proceedWithBooking() {
-        if (currentTrip == null) {
-            Toast.makeText(this, "Состояние рейса устарело, повторите выбор рейса", Toast.LENGTH_SHORT).show();
+        if (pendingPassengerId == -1) {
+            Toast.makeText(this, "Ошибка: ID пассажира потерян", Toast.LENGTH_SHORT).show();
             if (book != null) book.setEnabled(true);
             return;
         }
 
-        long passengerId;
-        if (!((CheckBox) findViewById(R.id.cbUseMyData)).isChecked()) {
-            String email = Objects.requireNonNull(etEmail.getText()).toString();
-            passengerId = profileViewModel.getIdByEmail(email);
-        } else {
-            if (currentUser == null) {
-                Toast.makeText(this, "Пользователь не найден", Toast.LENGTH_SHORT).show();
-                if (book != null) book.setEnabled(true);
-                return;
-            }
-            passengerId = currentUser.getId();
+        if (currentTrip == null) {
+            Toast.makeText(this, "Состояние рейса устарело", Toast.LENGTH_SHORT).show();
+            if (book != null) book.setEnabled(true);
+            return;
         }
 
         double price = currentTrip.getPrice();
@@ -623,7 +776,7 @@ public class BookingActivity extends AppCompatActivity {
         if (pet) price += petPrice;
         if (child) price += childPrice;
 
-        Booking booking = new Booking(currentTrip.getId(), passengerId, 1, child, pet, BookingStatus.PENDING, price);
+        Booking booking = new Booking(currentTrip.getId(), pendingPassengerId, 1, child, pet, BookingStatus.PENDING, price);
         bookingViewModel.createBooking(booking);
     }
 
@@ -631,7 +784,13 @@ public class BookingActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Рейсы не найдены")
                 .setMessage("Для выбранного маршрута нет доступных рейсов. Пожалуйста, выберите другой маршрут.")
-                .setPositiveButton("OK", (dialog, which) -> {})
+                .setPositiveButton("OK", (dialog, which) -> {
+                    if (launchTripId == -1 && launchRouteId == -1) {
+                        returnToRouteSelection();
+                    } else if (launchRouteId != -1) {
+                        finish();
+                    }
+                })
                 .show();
     }
 

@@ -40,12 +40,17 @@ public class Routes2Adapter extends RecyclerView.Adapter<Routes2Adapter.RouteVie
         Route route = routes.get(position);
         holder.bind(route);
     }
-
+    @SuppressLint("NotifyDataSetChanged")
+    public void clear(){
+        routes.clear();
+        notifyDataSetChanged();
+    }
     @Override
     public int getItemCount() {
         return routes != null ? routes.size() : 0;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void updateRoutes(List<Route> newRoutes) {
         this.routes = newRoutes;
         notifyDataSetChanged();

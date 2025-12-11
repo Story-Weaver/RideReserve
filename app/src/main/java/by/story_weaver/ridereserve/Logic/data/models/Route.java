@@ -4,10 +4,10 @@ import androidx.annotation.NonNull;
 
 public class Route {
     private long id;
-    private String name;        // например "Маршрут 5"
-    private String origin;      // откуда
-    private String destination; // докуда
-    private String stopsJson;   // опционально: JSON массив остановок
+    private String name;
+    private String origin;
+    private String destination;
+    private String stopsJson;
     private double distance;
     private boolean deleted = false;
     private String time;

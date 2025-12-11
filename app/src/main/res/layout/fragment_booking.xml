@@ -97,6 +97,66 @@
 
                 </LinearLayout>
 
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilMaxDistance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxStrokeColor="@color/green"
+                    app:hintTextColor="@color/gray_600">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etMaxDistance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Максимальная длина пути (км)"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Максимальное время в пути:"
+                    android:textColor="@color/gray_700"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="4dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <Spinner
+                        android:id="@+id/spinnerMaxDurationHours"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text=":"
+                        android:textSize="20sp"
+                        android:textColor="@color/gray_600"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerMaxDurationMinutes"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp" />
+
+                </LinearLayout>
+
                 <!-- Кнопка поиска маршрутов -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSearchRoutes"
@@ -141,7 +201,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerRoutes"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="400dp"
                     android:layout_marginBottom="8dp" />
 
             </LinearLayout>
@@ -192,23 +252,13 @@
                     android:textColor="@color/gray_700"
                     android:textSize="14sp"
                     android:layout_marginBottom="12dp" />
-                <!-- Прогресс-бар загрузки -->
+
                 <ProgressBar
                     android:id="@+id/progressTrips"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:visibility="gone" />
-
-                <!-- Информация о выбранном маршруте -->
-                <TextView
-                    android:id="@+id/tvSelectedRoute"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Маршрут: Москва - Санкт-Петербург"
-                    android:textColor="@color/gray_700"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="12dp" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerTrips"

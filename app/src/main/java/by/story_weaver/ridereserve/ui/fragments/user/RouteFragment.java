@@ -81,6 +81,7 @@ public class RouteFragment extends Fragment implements Routes2Adapter.OnRouteCli
         bookingViewModel.getAllRoutes().observe(getViewLifecycleOwner(), routesState -> {
             switch (routesState.status){
                 case LOADING:
+                    adapter.clear();
                     progressBar.setVisibility(VISIBLE);
                     break;
                 case SUCCESS:
