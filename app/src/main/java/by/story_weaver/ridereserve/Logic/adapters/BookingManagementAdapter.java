@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
+import by.story_weaver.ridereserve.Logic.utils.TranslateStatus;
 import by.story_weaver.ridereserve.R;
 import com.google.android.material.button.MaterialButton;
 import java.text.DecimalFormat;
@@ -139,23 +140,23 @@ public class BookingManagementAdapter extends RecyclerView.Adapter<BookingManage
             switch (status) {
                 case PENDING:
                     bgResId = R.drawable.bg_status_pending;
-                    statusText = "ОЖИДАЕТ";
+                    statusText = TranslateStatus.get(status);
                     break;
                 case CONFIRMED:
                     bgResId = R.drawable.bg_status_confirmed;
-                    statusText = "ПОДТВЕРЖДЕНО";
+                    statusText = TranslateStatus.get(status);
                     break;
                 case CANCELLED:
                     bgResId = R.drawable.bg_status_cancelled;
-                    statusText = "ОТМЕНЕНО";
+                    statusText = TranslateStatus.get(status);
                     break;
                 case COMPLETED:
-                    bgResId = R.drawable.bg_status_completed; // Добавьте этот drawable
-                    statusText = "ЗАВЕРШЕНО";
+                    bgResId = R.drawable.bg_status_completed;
+                    statusText = TranslateStatus.get(status);
                     break;
                 default:
                     bgResId = R.drawable.bg_status_pending;
-                    statusText = "ОЖИДАЕТ";
+                    statusText = TranslateStatus.get(status);
             }
 
             tvStatus.setText(statusText);

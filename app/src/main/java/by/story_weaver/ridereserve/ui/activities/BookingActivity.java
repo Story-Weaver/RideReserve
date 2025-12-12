@@ -65,7 +65,7 @@ public class BookingActivity extends AppCompatActivity {
     private MaterialButton book, btnSearchRoutes, btnBackToRoutes, btnBackToTrips;
     private Spinner spinnerFrom, spinnerTo;
     private RecyclerView recyclerRoutes, recyclerTrips;
-    private TextView textRouteCard, tvSelectedRoute, tvRouteInfo, tvDepartureTime, tvTripPrice, tvTotalPrice;
+    private TextView textRouteCard, tvSelectedRoute, tvRouteInfo, tvDepartureTime, tvTripPrice, tvTotalPrice, tvPetPrice, tvChildPrice;
     private ProgressBar progressTrips;
     private CardView cardRouteSelection, cardRoutesList, cardTimeSelection, cardTripInfo, cardServices, cardPassenger, cardTotal;
 
@@ -82,8 +82,8 @@ public class BookingActivity extends AppCompatActivity {
     private boolean isChild = false;
     private boolean isPet = false;
     private double totalPrice = 0;
-    private final double petPrice = 200;
-    private final double childPrice = 300;
+    private final double petPrice = 10;
+    private final double childPrice = 15;
     private long launchRouteId = -1;
     private long launchTripId = -1;
 
@@ -169,6 +169,10 @@ public class BookingActivity extends AppCompatActivity {
         tvDepartureTime = findViewById(R.id.tvDepartureTime);
         tvTripPrice = findViewById(R.id.tvTripPrice);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
+        tvChildPrice = findViewById(R.id.tvChildSeatPrice);
+        tvChildPrice.setText("+ " + childPrice + " BYN");
+        tvPetPrice = findViewById(R.id.tvPetPrice);
+        tvPetPrice.setText("+ " + petPrice + " BYN");
     }
 
     private void setupInitialState() {

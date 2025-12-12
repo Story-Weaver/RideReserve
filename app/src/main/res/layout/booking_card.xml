@@ -111,14 +111,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Пассажиры: 2"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/trPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1 400 ₽"
+                android:text="1 400 BYN"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 

@@ -16,6 +16,7 @@ import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
 import by.story_weaver.ridereserve.Logic.data.models.Vehicle;
+import by.story_weaver.ridereserve.Logic.utils.TranslateStatus;
 import by.story_weaver.ridereserve.R;
 
 public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.TripViewHolder> {
@@ -188,23 +189,23 @@ public class DriverTripsAdapter extends RecyclerView.Adapter<DriverTripsAdapter.
 
             switch (status) {
                 case SCHEDULED:
-                    tvTripStatus.setText("Запланирована");
+                    tvTripStatus.setText(TranslateStatus.get(status));
                     tvTripStatus.setBackgroundResource(R.drawable.bg_status_scheduled);
                     break;
                 case IN_PROGRESS:
-                    tvTripStatus.setText("В пути");
+                    tvTripStatus.setText(TranslateStatus.get(status));
                     tvTripStatus.setBackgroundResource(R.drawable.bg_status_in_progress);
                     break;
                 case COMPLETED:
-                    tvTripStatus.setText("Завершена");
+                    tvTripStatus.setText(TranslateStatus.get(status));
                     tvTripStatus.setBackgroundResource(R.drawable.bg_status_completed);
                     break;
                 case CANCELLED:
-                    tvTripStatus.setText("Отменена");
+                    tvTripStatus.setText(TranslateStatus.get(status));
                     tvTripStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
                     break;
                 default:
-                    tvTripStatus.setText("Неизвестно");
+                    tvTripStatus.setText(TranslateStatus.get(status));
                     tvTripStatus.setBackgroundResource(R.drawable.bg_status_scheduled);
             }
         }

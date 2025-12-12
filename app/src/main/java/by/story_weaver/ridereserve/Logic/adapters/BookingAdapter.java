@@ -19,6 +19,7 @@ import by.story_weaver.ridereserve.Logic.data.enums.BookingStatus;
 import by.story_weaver.ridereserve.Logic.data.models.Booking;
 import by.story_weaver.ridereserve.Logic.data.models.Route;
 import by.story_weaver.ridereserve.Logic.data.models.Trip;
+import by.story_weaver.ridereserve.Logic.utils.TranslateStatus;
 import by.story_weaver.ridereserve.R;
 
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
@@ -34,7 +35,6 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     }
 
     public BookingAdapter(List<Booking> bookingList, List<Route> routeList, List<Trip> tripList) {
-        // никогда не держим null-списки
         this.bookingList = bookingList != null ? bookingList : new ArrayList<>();
         this.routeList = routeList != null ? routeList : new ArrayList<>();
         this.tripList = tripList != null ? tripList : new ArrayList<>();
@@ -174,7 +174,6 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
         @SuppressLint("SetTextI18n")
         public void bind(Booking booking, Trip trip, Route route) {
-            // безопасные значения-по-умолчанию
             String routeName = route != null && route.getName() != null ? route.getName() : "—";
             String destination = route != null && route.getDestination() != null ? route.getDestination() : "—";
             String arrivalTime = trip != null && trip.getArrivalTime() != null ? trip.getArrivalTime() : "—";
@@ -182,13 +181,13 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             double price = booking != null ? booking.getPrice() : 0.0;
             BookingStatus status = booking != null ? booking.getStatus() : null;
 
-            tvRouteNumber.setText("Маршрут № " + routeName);
-            tvStatus.setText(status != null ? status.toString() : "UNKNOWN");
+            tvRouteNumber.setText("Маршрут: " + routeName);
+            tvStatus.setText(status != null ? TranslateStatus.get(status) : "UNKNOWN");
             tvRoute.setText(destination);
             tvDateTime.setText(arrivalTime);
             checkChild.setChecked(booking != null && booking.isChildSeatNeeded());
             checkPet.setChecked(booking != null && booking.isHasPet());
-            tvPassengers.setText("Пассажиры: " + passengers);
+            //tvPassengers.setText("Пассажиры: " + passengers);
             tvPrice.setText(String.format(Locale.getDefault(), "%.2f BYN", price));
 
             setupStatusAppearance(status);

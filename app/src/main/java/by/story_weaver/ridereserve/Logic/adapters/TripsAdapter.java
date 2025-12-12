@@ -81,7 +81,7 @@ public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHold
         public void bind(Trip trip) {
             tvDepartureTime.setText(trip.getDepartureTime());
             tvArrivalTime.setText(trip.getArrivalTime());
-            tvPrice.setText(String.format("%.2f ₽", trip.getPrice()));
+            tvPrice.setText(String.format("%.2f BYN", trip.getPrice()));
 
             // Отображаем статус только в админ-режиме
             if (showAdminInfo) {
